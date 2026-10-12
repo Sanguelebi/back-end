@@ -14,13 +14,13 @@ jobs:
         uses: actions/checkout@v4
       - name: Start Docker Compose with Mock Env
         env:
-          GIN_MODE=release
-          PORT=8080
-          DB_HOST=postgres
-          DB_PORT=5432
-          DB_USER=your_db_user
-          DB_PASSWORD=your_secure_db_password
-          DB_NAME=course_selection_db
+          GIN_MODE: release
+          PORT: 8080
+          DB_HOST: postgres
+          DB_PORT: 5432
+          DB_USER: your_db_user
+          DB_PASSWORD: your_secure_db_password
+          DB_NAME: course_selection_db
         run: docker compose up --build -d
       - name: Check Running Containers
         run: docker compose ps
