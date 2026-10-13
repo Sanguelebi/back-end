@@ -1,0 +1,37 @@
+name: Docker Compose Test
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  docker-compose-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx (cache)
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env for Docker Compose
+        run: |
+          echo "GIN_MODE=release" >> .env
+          echo "PORT=8080" >> .env
+          echo "DB_HOST=postgres" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_USER=your_db_user" >> .env
+          echo "DB_PASSWORD=your_secure_db_password" >> .env
+          echo "DB_NAME=course_selection_db" >> .env
+
+      - name: Start Docker Compose
+        run: docker compose up --build -d
+
+      - name: Check Running Containers
+        run: docker compose ps
+
+      - name: Tear Down Docker Compose
+        if: always()
+        run: docker compose down
