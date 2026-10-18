@@ -41,6 +41,15 @@ func (s Semester) String() string {
 	}
 }
 
+type EnrollmentTable struct {
+	ID             int32    `gorm:"column:id;primaryKey;autoIncrement"`
+	Status         Status   `gorm:"column:status;type:smallint;not null"`
+	SubjectGroupID int32    `gorm:"column:subjectGroupId;type:integer;not null"`
+	Year           int16    `gorm:"column:year;type:smallint;not null"`
+	Semester       Semester `gorm:"column:semester;type:smallint;not null"`
+	StudentID      int32    `gorm:"column:studentId;type:integer;not null"`
+}
+
 type SubjectType int
 
 const (
@@ -57,57 +66,6 @@ func (s SubjectType) String() string {
 	default:
 		return ""
 	}
-}
-
-type Role int
-
-const (
-	RoleStudent Role = iota + 1
-	RoleCordinator
-	RoleManager
-	RoleAdmin
-)
-
-func (s Role) String() string {
-	switch s {
-	case RoleStudent:
-		return "student"
-	case RoleCordinator:
-		return "cordinator"
-	case RoleManager:
-		return "manager"
-	case RoleAdmin:
-		return "admin"
-	default:
-		return ""
-	}
-}
-
-type LectureType int
-
-const (
-	Lecture = iota + 1
-	Seminar
-)
-
-func (s LectureType) String() string {
-	switch s {
-	case Lecture:
-		return "lecture"
-	case Seminar:
-		return "seminar"
-	default:
-		return ""
-	}
-}
-
-type EnrollmentTable struct {
-	ID             int32    `gorm:"column:id;primaryKey;autoIncrement"`
-	Status         Status   `gorm:"column:status;type:smallint;not null"`
-	SubjectGroupID int32    `gorm:"column:subjectGroupId;type:integer;not null"`
-	Year           int16    `gorm:"column:year;type:smallint;not null"`
-	Semester       Semester `gorm:"column:semester;type:smallint;not null"`
-	StudentID      int32    `gorm:"column:studentId;type:integer;not null"`
 }
 
 type ChoosableSubjects struct {
@@ -138,6 +96,30 @@ type SubjectPrerequisite struct {
 	BucketId            int16 `gorm:"column:bucketId"`
 }
 
+type Role int
+
+const (
+	RoleStudent Role = iota + 1
+	RoleCordinator
+	RoleManager
+	RoleAdmin
+)
+
+func (s Role) String() string {
+	switch s {
+	case RoleStudent:
+		return "student"
+	case RoleCordinator:
+		return "cordinator"
+	case RoleManager:
+		return "manager"
+	case RoleAdmin:
+		return "admin"
+	default:
+		return ""
+	}
+}
+
 type Users struct {
 	Id            int16  `gorm:"column:id;primaryKey"`
 	Email         string `gorm:"column:email"`
@@ -158,6 +140,24 @@ type Lecturer struct {
 	LastName    string `gorm:"column:lastName"`
 	Description string `gorm:"column:description"`
 	PhotoUrl    string `gorm:"column:photoURL"`
+}
+
+type LectureType int
+
+const (
+	Lecture = iota + 1
+	Seminar
+)
+
+func (s LectureType) String() string {
+	switch s {
+	case Lecture:
+		return "lecture"
+	case Seminar:
+		return "seminar"
+	default:
+		return ""
+	}
 }
 
 type SubjectGroup struct {
