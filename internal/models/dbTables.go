@@ -41,31 +41,39 @@ func (s Semester) String() string {
 type Faculty struct {
 	ID          int32  `gorm:"primaryKey;autoIncrement"`
 	Name        string `gorm:"type:varchar(255);not null"`
-	Description string `gorm:"type:varchar(255)"`
+	Description string `gorm:"type:varchar(255);not null"`
 }
 
 type Users struct {
-	Id            int32   `gorm:"primaryKey;autoIncrement"`
+	ID            int32   `gorm:"primaryKey;autoIncrement"`
 	Email         string  `gorm:"type:varchar(254);not null;unique"`
 	Password      string  `gorm:"type:varchar(255);not null"`
 	Role          Role    `gorm:"type:smallint;not null"`
 	FirstName     string  `gorm:"type:varchar(255);not null"`
 	LastName      string  `gorm:"type:varchar(255);not null"`
-	Gender        string  `gorm:"type:varchar(255)"`
-	PersonalNo    string  `gorm:"type:varchar(255)"`
-	PhoneNumber   string  `gorm:"type:varchar(255)"`
-	PhotoUrl      string  `gorm:"type:text"`
+	Gender        string  `gorm:"type:varchar(255);not null"`
+	PersonalNo    string  `gorm:"type:varchar(255);not null"`
+	PhoneNumber   string  `gorm:"type:varchar(255);not null"`
+	PhotoUrl      string  `gorm:"type:text;not null"`
 	AcademicPause *bool   `gorm:"type:boolean"`
 }
 
 type Subject struct {
 	ID             int32    `gorm:"primaryKey;autoIncrement"`
 	Name           string   `gorm:"type:varchar(255);not null"`
-	Description    string   `gorm:"type:text"`
+	Description    string   `gorm:"type:varchar(255);not null"`
 	Credit         int32    `gorm:"type:integer;not null"`
 	FacultyID      int32    `gorm:"type:integer;not null"`
 	Faculty        Faculty  `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 	SyllabusPdfURL *string  `gorm:"type:text"`
+}
+
+type SubjectPrerequisite struct {
+	SubjectId             int32   `gorm:"primaryKey;type:integer;not null"`
+	Subject               Subject `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SubjectPrerequisiteId int32   `gorm:"primaryKey;type:integer;not null"`
+	PrerequisiteSubject   Subject `gorm:"foreignKey:SubjectPrerequisiteId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	BucketId              int32   `gorm:"type:integer;not null"`
 }
 
 type EnrollmentTable struct {
@@ -106,14 +114,6 @@ type ChoosableSubjects struct {
 	SubjectType SubjectType `gorm:"type:smallint;not null"`
 }
 
-type SubjectPrerequisite struct {
-	SubjectId           int32 `gorm:"primaryKey"`
-	Subject             Subject `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	SubjectPrerequisite int32 `gorm:"primaryKey"`
-	PrerequisiteSubject Subject `gorm:"foreignKey:SubjectPrerequisite;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	BucketId            int32 `gorm:"type:integer"`
-}
-
 type Role int
 
 const (
@@ -139,11 +139,11 @@ func (s Role) String() string {
 }
 
 type Lecturer struct {
-	Id          int32  `gorm:"primaryKey;autoIncrement"`
-	FirstName   string `gorm:"type:varchar(255);not null"`
-	LastName    string `gorm:"type:varchar(255);not null"`
-	Description string `gorm:"type:text"`
-	PhotoUrl    string `gorm:"type:text"`
+	ID          int32   `gorm:"primaryKey;autoIncrement"`
+	FirstName   string  `gorm:"type:varchar(255);not null"`
+	LastName    string  `gorm:"type:varchar(255);not null"`
+	Description string  `gorm:"type:text;not null"`
+	PhotoUrl    *string `gorm:"type:text"`
 }
 
 type LectureType int
@@ -165,7 +165,7 @@ func (s LectureType) String() string {
 }
 
 type SubjectGroup struct {
-	Id          int32       `gorm:"primaryKey;autoIncrement"`
+	ID          int32       `gorm:"primaryKey;autoIncrement"`
 	GroupNo     int16       `gorm:"type:smallint;not null"`
 	SubjectId   int32       `gorm:"type:integer;not null"`
 	Subject     Subject     `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
@@ -179,7 +179,7 @@ type SubjectGroup struct {
 }
 
 type StudentPriorityList struct {
-	Id             int32        `gorm:"primaryKey;autoIncrement"`
+	ID             int32        `gorm:"primaryKey;autoIncrement"`
 	Priority       int16        `gorm:"type:smallint;not null"`
 	SubjectGroupId int32        `gorm:"type:integer;not null"`
 	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
