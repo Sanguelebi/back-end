@@ -2,6 +2,7 @@ package database
 
 import (
 	"course-selection-platform/config"
+	"course-selection-platform/internal/models"
 	"fmt"
 
 	"gorm.io/driver/postgres"
@@ -24,11 +25,23 @@ func ConnectDB(cfg *config.DBConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("get underlying database connection: %w", err)
 	}
-
+	
 	if err := sqlDB.Ping(); err != nil {
 		_ = sqlDB.Close()
 		return nil, fmt.Errorf("ping database: %w", err)
 	}
+	
+	db.AutoMigrate(
+		&models.Faculty{}, 
+		&models.Users{}, 
+		&models.Subject{}, 
+		&models.EnrollmentTable{}, 
+		&models.ChoosableSubjects{}, 
+		&models.SubjectPrerequisite{}, 
+		&models.Lecturer{}, 
+		&models.SubjectGroup{}, 
+		&models.StudentPriorityList{},
+	)
 
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(25)
