@@ -1,0 +1,40 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create .env for Docker Compose
+        env:
+          GIN_MODE: ${{ secrets.GIN_MODE }}
+          PORT: ${{ secrets.PORT }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+        run: |
+          echo "GIN_MODE=$GIN_MODE" > .env
+          echo "PORT=$PORT" >> .env
+          echo "DB_HOST=$DB_HOST" >> .env
+          echo "DB_PORT=$DB_PORT" >> .env
+          echo "DB_USER=$DB_USER" >> .env
+          echo "DB_PASSWORD=$DB_PASSWORD" >> .env
+          echo "DB_NAME=$DB_NAME" >> .env
+
+      - name: Start Docker Compose
+        run: docker compose up --build -d
+
+      # Safely cleans up old images, containers, and build caches
+      - name: Cleanup Unused Docker Resources
+        run: docker system prune -af
+
+      - name: Post-deployment Cleanup
+        run: rm -f .env
