@@ -22,6 +22,8 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
+          DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           echo "GIN_MODE=$GIN_MODE" > .env
           echo "PORT=$PORT" >> .env
@@ -30,6 +32,8 @@ jobs:
           echo "DB_USER=$DB_USER" >> .env
           echo "DB_PASSWORD=$DB_PASSWORD" >> .env
           echo "DB_NAME=$DB_NAME" >> .env
+          echo "DB_SSLMODE=$DB_SSLMODE" >> .env
+          echo "JWT_SECRET=$JWT_SECRET" >> .env
 
       # Safely cleans up old images, containers, and build caches
       - name: Cleanup Unused Docker Resources
