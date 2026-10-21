@@ -41,7 +41,3 @@ jobs:
 
       - name: Start Docker Compose
         run: docker-compose up --build -d
-
-      # Clear the .env file content.
-      - name: Post-deployment Cleanup
-        run: echo "" > .env
