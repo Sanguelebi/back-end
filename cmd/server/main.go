@@ -3,11 +3,10 @@ package main
 import (
 	"course-selection-platform/config"
 	"course-selection-platform/database"
+	"course-selection-platform/internal/routes"
 	"log"
-	"net/http"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -29,12 +28,8 @@ func main() {
 	}
 	_ = db // This line here is to avoid getting yelled at by the compiler.
 
-	router := gin.Default()
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "Welcome to the Course Selection Platform API",
-		})
-	})
+	// This SetupRouter() function will contain all of our API endpoints.
+	router := routes.SetupRouter()
 	
 	// Get PORT from .env
 	port := os.Getenv("PORT")
