@@ -188,7 +188,8 @@ type StudentPriorityList struct {
 }
 
 type LecturerRating struct {
-	ID         int32 `gorm:"primaryKey;autoIncrement"`
-	LecturerID int32 `gorm:"type:integer;not null"`
-	Rating     int16 `gorm:"type:integer;not null"`
+	ID         	uint 		`gorm:"primaryKey;autoIncrement"`
+	LecturerId 	uint 		`gorm:"type:integer;not null"`
+	Lecturer	Lecturer	`gorm:"foreignKey:LecturerId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Rating     	int16 		`gorm:"type:integer;not null"`
 }
