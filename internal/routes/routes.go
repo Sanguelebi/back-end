@@ -1,13 +1,15 @@
 package routes
 
 import (
+	"course-selection-platform/internal/handlers"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // The main SetupRouter function.
-func SetupRouter() *gin.Engine {
+func SetupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/", func(c *gin.Context) {
@@ -23,6 +25,7 @@ func SetupRouter() *gin.Engine {
 				"message": "Pong!",
 			})
 		})
+		api.GET("/subjects", handlers.GetSubjects(db))
 	}
 
 	return r;
