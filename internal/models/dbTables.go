@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Status int
 type Semester int
 
@@ -242,4 +244,16 @@ type SubjectDifficulty struct {
 	SubjectId       uint   	`gorm:"type:integer;not null"`
 	Subject         Subject `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	DifficultyScale int16   `gorm:"type:integer;not null"`
+}
+
+type ActiveRegistration struct {
+	ID		uint 		`gorm:"primaryKey;autoIncrement"`
+	From 	time.Time
+	To		time.Time
+}
+
+type InactiveRegistration struct {
+	ID		uint 		`gorm:"primaryKey;autoIncrement"`
+	From 	time.Time
+	To		time.Time
 }
