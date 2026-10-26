@@ -45,7 +45,7 @@ func ConnectDB(cfg *config.DBConfig) (*gorm.DB, error) {
 		&models.SubjectDifficulty{},
 		&models.SubjectRecommendation{},
 		&models.ActiveRegistration{},
-		&models.InactiveRegistration{}
+		&models.InactiveRegistration{},
 	)
 
 	sqlDB.SetMaxIdleConns(10)
