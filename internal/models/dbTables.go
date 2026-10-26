@@ -63,6 +63,13 @@ func (s StudentStatus) String() string {
 	}
 }
 
+type Gender int
+
+const (
+	Male Gender = iota + 1
+	Female
+)
+
 type Users struct {
 	ID            uint  			`gorm:"primaryKey;autoIncrement"`
 	Email         string 			`gorm:"type:varchar(254);not null;unique"`
@@ -70,11 +77,11 @@ type Users struct {
 	Role          Role   			`gorm:"type:smallint;not null"`
 	FirstName     string 			`gorm:"type:varchar(255);not null"`
 	LastName      string 			`gorm:"type:varchar(255);not null"`
-	Gender        string 			`gorm:"type:varchar(255);not null"`
+	Gender        Gender 			`gorm:"type:smallint;not null"`
 	PersonalNo    string 			`gorm:"type:varchar(255);not null"`
 	PhoneNumber   string 			`gorm:"type:varchar(255);not null"`
 	PhotoUrl      string 			`gorm:"type:text;not null"`
-	StudentStatus *StudentStatus  	`gorm:"type:boolean"`
+	StudentStatus *StudentStatus  	`gorm:"type:smallint"`
 }
 
 type Subject struct {
