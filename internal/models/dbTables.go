@@ -45,27 +45,27 @@ type Faculty struct {
 }
 
 type Users struct {
-	ID            int32   `gorm:"primaryKey;autoIncrement"`
-	Email         string  `gorm:"type:varchar(254);not null;unique"`
-	Password      string  `gorm:"type:varchar(255);not null"`
-	Role          Role    `gorm:"type:smallint;not null"`
-	FirstName     string  `gorm:"type:varchar(255);not null"`
-	LastName      string  `gorm:"type:varchar(255);not null"`
-	Gender        string  `gorm:"type:varchar(255);not null"`
-	PersonalNo    string  `gorm:"type:varchar(255);not null"`
-	PhoneNumber   string  `gorm:"type:varchar(255);not null"`
-	PhotoUrl      string  `gorm:"type:text;not null"`
-	AcademicPause *bool   `gorm:"type:boolean"`
+	ID            int32  `gorm:"primaryKey;autoIncrement"`
+	Email         string `gorm:"type:varchar(254);not null;unique"`
+	Password      string `gorm:"type:varchar(255);not null"`
+	Role          Role   `gorm:"type:smallint;not null"`
+	FirstName     string `gorm:"type:varchar(255);not null"`
+	LastName      string `gorm:"type:varchar(255);not null"`
+	Gender        string `gorm:"type:varchar(255);not null"`
+	PersonalNo    string `gorm:"type:varchar(255);not null"`
+	PhoneNumber   string `gorm:"type:varchar(255);not null"`
+	PhotoUrl      string `gorm:"type:text;not null"`
+	AcademicPause *bool  `gorm:"type:boolean"`
 }
 
 type Subject struct {
-	ID             int32    `gorm:"primaryKey;autoIncrement"`
-	Name           string   `gorm:"type:varchar(255);not null"`
-	Description    string   `gorm:"type:varchar(255);not null"`
-	Credit         int32    `gorm:"type:integer;not null"`
-	FacultyID      int32    `gorm:"type:integer;not null"`
-	Faculty        Faculty  `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
-	SyllabusPdfURL *string  `gorm:"type:text"`
+	ID             int32   `gorm:"primaryKey;autoIncrement"`
+	Name           string  `gorm:"type:varchar(255);not null"`
+	Description    string  `gorm:"type:varchar(255);not null"`
+	Credit         int32   `gorm:"type:integer;not null"`
+	FacultyID      int32   `gorm:"type:integer;not null"`
+	Faculty        Faculty `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	SyllabusPdfURL *string `gorm:"type:text"`
 }
 
 type SubjectPrerequisite struct {
@@ -185,4 +185,37 @@ type StudentPriorityList struct {
 	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	StudentId      int32        `gorm:"type:integer;not null"`
 	Student        Users        `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+}
+
+type Vote int
+
+const (
+	Like Vote = iota + 1
+	Dislike
+)
+
+func (s Vote) String() string {
+	switch s {
+	case Like:
+		return "like"
+	case Dislike:
+		return "dislike"
+	default:
+		return ""
+	}
+}
+
+type SubjectRecommendation struct {
+	ID        int32   `gorm:"primaryKey;autoIncrement"`
+	SubjectID int32   `gorm:"not null;index"`
+	UserID    int32   `gorm:"not null;index"`
+	VoteType  Vote    `gorm:"not null"`
+	Subject   Subject `gorm:"foreignKey:SubjectID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+}
+
+type SubjectDifficulty struct {
+	ID              int32   `gorm:"primaryKey;autoIncrement"`
+	SubjectID       int32   `gorm:"not null;index"`
+	DifficultyScale int16   `gorm:"not null"`
+	Subject         Subject `gorm:"foreignKey:SubjectID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
