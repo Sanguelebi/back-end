@@ -29,7 +29,7 @@ func main() {
 	_ = db // This line here is to avoid getting yelled at by the compiler.
 
 	// This SetupRouter() function will contain all of our API endpoints.
-	router := routes.SetupRouter()
+	router := routes.SetupRouter(db)
 	
 	// Get PORT from .env
 	port := os.Getenv("PORT")
