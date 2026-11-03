@@ -208,9 +208,9 @@ type StudentPriorityList struct {
 	ID             uint        	`gorm:"primaryKey;autoIncrement"`
 	Priority       int16        `gorm:"type:smallint;not null"`
 	SubjectGroupId uint        	`gorm:"type:integer;not null"`
-	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 	StudentId      uint        	`gorm:"type:integer;not null"`
-	Student        Users        `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Student        Users        `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 }
 
 type LecturerRating struct {
