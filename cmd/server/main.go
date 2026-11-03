@@ -34,7 +34,7 @@ func main() {
 	_ = appData
 
 	// This SetupRouter() function will contain all of our API endpoints.
-	router := routes.SetupRouter(db)
+	router := routes.SetupRouter(appData)
 
 	// Get PORT from .env
 	port := os.Getenv("PORT")

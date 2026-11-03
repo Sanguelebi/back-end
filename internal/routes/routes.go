@@ -1,21 +1,27 @@
 package routes
 
 import (
+	"course-selection-platform/config"
 	"course-selection-platform/internal/handlers"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // The main SetupRouter function.
-func SetupRouter(db *gorm.DB) *gin.Engine {
+func SetupRouter(app *config.AppData) *gin.Engine {
 	r := gin.Default()
 
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "To access the api, add /api and the endpoint you are looking for.",
-		})
+	r.NoRoute(func(c *gin.Context) {
+		if !strings.HasPrefix(c.Request.URL.Path, "/api") {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "To access the api, add /api and the endpoint you are looking for.",
+			})
+			return
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{"error": "API endpoint not found"})
 	})
 
 	{
@@ -25,7 +31,8 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 				"message": "Pong!",
 			})
 		})
-		api.GET("/subjects", handlers.GetSubjects(db))
+		api.GET("/subjects", handlers.GetSubjects(app.DB))
+		api.POST("/login", handlers.LoginHandler(app))
 	}
 
 	return r;

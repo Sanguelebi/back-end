@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Login(email, plainPassword string, app *config.AppData) (string, models.LoginUserResponse, error) {
+func LoginService(email, plainPassword string, app *config.AppData) (string, models.LoginUserResponse, error) {
     var user models.Users
 
     err := app.DB.Where("email = ?", email).First(&user).Error
