@@ -21,10 +21,18 @@ func LoginService(email, plainPassword string, app *config.AppData) (string, mod
         return "", models.LoginUserResponse{}, err
     }
 
-    err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(plainPassword))
-    if err != nil {
-        return "", models.LoginUserResponse{}, errors.New("invalid email or password")
-    }
+	if len(user.Password) == 0 {
+		return "", models.LoginUserResponse{}, errors.New("invalid email or password")
+	}
+
+	if len(plainPassword) > 72 {
+		return "", models.LoginUserResponse{}, errors.New("invalid email or password")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(plainPassword))
+	if err != nil {
+		return "", models.LoginUserResponse{}, errors.New("invalid email or password")
+	}
 
     userResponse := models.LoginUserResponse{
         ID:            user.ID,
