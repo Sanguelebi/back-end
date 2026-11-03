@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(userData models.LoginUserDTO, secret []byte) (string, error) {
+func GenerateToken(userData models.LoginUserResponse, secret []byte) (string, error) {
     claims := jwt.MapClaims{
         "sub":   userData.ID,
         "email": userData.Email,

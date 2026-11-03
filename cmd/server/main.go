@@ -16,27 +16,25 @@ func main() {
 		return
 	}
 	
-	// Load the JWT Secret from .env
-	appConfig, err := config.LoadAppConfig()
+	dbCfg, err := config.LoadDBConfig()
 	if err != nil {
-		log.Fatalf("App Config initialization has failed: %v", err)
-	}
-	_ = appConfig // Temporary.
-
-	// Load the DB Config first and then connect to the DB with it.
-	cfg, err := config.LoadDBConfig()
-	if err != nil {
-		log.Fatalf("Config initialization has failed: %v", err)
+		log.Fatalf("DB Config Initialization failed: %v", err)
 	}
 	
-	db, err := database.ConnectDB(cfg)
+	db, err := database.ConnectDB(dbCfg)
 	if err != nil {
 		log.Fatalf("Database initialization failed: %v", err)
 	}
-	_ = db // This line here is to avoid getting yelled at by the compiler.
+
+	// Load the JWT Secret from .env
+	appData, err := config.LoadAppConfig(db)
+	if err != nil {
+		log.Fatalf("App Config initialization has failed: %v", err)
+	}
+	_ = appData
 
 	// This SetupRouter() function will contain all of our API endpoints.
-	router := routes.SetupRouter(db)
+	router := routes.SetupRouter(appData)
 
 	// Get PORT from .env
 	port := os.Getenv("PORT")
