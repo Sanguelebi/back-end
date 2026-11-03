@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"fmt"
-	"os"
 	"time"
 
 	"course-selection-platform/internal/models"
@@ -10,13 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(userData models.LoginUserDTO) (string, error) {
-    secret := os.Getenv("JWT_SECRET")
-    if secret == "" {
-        return "", fmt.Errorf("JWT_SECRET environment variable is not set")
-    }
-    jwtKey := []byte(secret)
-
+func GenerateToken(userData models.LoginUserDTO, secret []byte) (string, error) {
     claims := jwt.MapClaims{
         "sub":   userData.ID,
         "email": userData.Email,
@@ -27,7 +19,7 @@ func GenerateToken(userData models.LoginUserDTO) (string, error) {
     }
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-    tokenString, err := token.SignedString(jwtKey)
+    tokenString, err := token.SignedString(secret)
     if err != nil {
         return "", err
     }
