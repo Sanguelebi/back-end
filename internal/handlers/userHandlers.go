@@ -17,7 +17,7 @@ func LoginHandler(c *gin.Context, app *config.AppData) {
 		return
 	}
 
-	tokenString, userData, err := services.Login(req.Email, req.Password, app.DB, app.JWTSecret)
+	tokenString, userData, err := services.Login(req.Email, req.Password, app)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return

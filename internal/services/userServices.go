@@ -1,6 +1,7 @@
 package services
 
 import (
+	"course-selection-platform/config"
 	"course-selection-platform/internal/auth"
 	"course-selection-platform/internal/models"
 	"errors"
@@ -9,10 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func Login(email, plainPassword string, db *gorm.DB, secret []byte) (string, models.LoginUserResponse, error) {
+func Login(email, plainPassword string, app *config.AppData) (string, models.LoginUserResponse, error) {
     var user models.Users
 
-    err := db.Where("email = ?", email).First(&user).Error
+    err := app.DB.Where("email = ?", email).First(&user).Error
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
             return "", models.LoginUserResponse{}, errors.New("invalid email or password")
@@ -44,7 +45,7 @@ func Login(email, plainPassword string, db *gorm.DB, secret []byte) (string, mod
     }
 
     // Generate the token
-    tokenString, err := auth.GenerateToken(loginDTO, secret)
+    tokenString, err := auth.GenerateToken(loginDTO, app.JWTSecret)
     if err != nil {
         return "", models.LoginUserResponse{}, err
     }
