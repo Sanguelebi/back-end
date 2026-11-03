@@ -3,6 +3,7 @@ package routes
 import (
 	"course-selection-platform/config"
 	"course-selection-platform/internal/handlers"
+	"course-selection-platform/internal/middleware"
 	"net/http"
 	"strings"
 
@@ -32,6 +33,11 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 			})
 		})
 		api.GET("/subjects", handlers.GetSubjects(app.DB))
+		
+		api.GET("/priority", middleware.RequireAuth(app.JWTSecret), handlers.GetPriorities(app.DB))
+		api.POST("/priority", middleware.RequireAuth(app.JWTSecret), handlers.AddPriority(app.DB))
+		api.DELETE("/priority/:id", middleware.RequireAuth(app.JWTSecret), handlers.DeletePriority(app.DB))
+		
 		api.POST("/login", handlers.LoginHandler(app))
 	}
 
