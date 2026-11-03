@@ -16,6 +16,13 @@ func main() {
 		return
 	}
 	
+	// Load the JWT Secret from .env
+	appConfig, err := config.LoadAppConfig()
+	if err != nil {
+		log.Fatalf("App Config initialization has failed: %v", err)
+	}
+	_ = appConfig // Temporary.
+
 	// Load the DB Config first and then connect to the DB with it.
 	cfg, err := config.LoadDBConfig()
 	if err != nil {
@@ -30,7 +37,7 @@ func main() {
 
 	// This SetupRouter() function will contain all of our API endpoints.
 	router := routes.SetupRouter(db)
-	
+
 	// Get PORT from .env
 	port := os.Getenv("PORT")
 	if port == "" {
