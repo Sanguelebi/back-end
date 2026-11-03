@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-)
 
-// TODO: Move DBConfig to be a part of the AppConfig struct.
-type AppConfig struct {
-	JWTSecret []byte
-}
+	"gorm.io/gorm"
+)
 
 // This will be the main config for DB connection.
 // Since this is a config folder, we only want configuration files here.
@@ -22,14 +19,27 @@ type DBConfig struct {
 	SSLMode  string
 }
 
-func LoadAppConfig() (*AppConfig, error) {
+type AppData struct {
+	JWTSecret []byte
+	IsSecure bool
+	DB *gorm.DB
+}
+
+func LoadAppConfig(db *gorm.DB) (*AppData, error) {
 	jwt_secret := os.Getenv("JWT_SECRET")
 	if jwt_secret == "" {
 		return nil, fmt.Errorf("JWT Secret does not exist.")
 	}
 
-	return &AppConfig{
+	cookieIsSecure, err := strconv.ParseBool(os.Getenv("IS_SECURE"))
+	if err != nil {
+		return nil, err
+	}
+
+	return &AppData{
 		JWTSecret: []byte(jwt_secret),
+		DB: db,
+		IsSecure: cookieIsSecure,
 	}, nil
 }
 
