@@ -90,7 +90,7 @@ type Subject struct {
 	Description    string  	`gorm:"type:varchar(255);not null"`
 	Credit         int32   	`gorm:"type:integer;not null"`
 	FacultyID      uint   	`gorm:"type:integer;not null"`
-	Faculty        Faculty 	`gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Faculty        Faculty 	`gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"-"`
 	SyllabusPdfURL *string 	`gorm:"type:text"`
 }
 
