@@ -1,6 +1,10 @@
 package models
 
-type LoginUserDTO struct {
+type LoginUserRequest struct {
+    Email string `json:"email"`
+    Password string `json:"password"`
+}
+type LoginUserResponse struct {
     ID            uint          	`json:"id"`
     Email         string        	`json:"email"`
     Role          string          	`json:"role"`
