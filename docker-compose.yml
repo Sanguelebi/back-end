@@ -10,6 +10,8 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-CHECK", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
 
   # Backend service
   backend:
