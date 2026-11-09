@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -15,23 +16,30 @@ func main() {
 	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
 		return
 	}
-	
+
 	dbCfg, err := config.LoadDBConfig()
 	if err != nil {
 		log.Fatalf("DB Config Initialization failed: %v", err)
 	}
-	
+
 	db, err := database.ConnectDB(dbCfg)
 	if err != nil {
 		log.Fatalf("Database initialization failed: %v", err)
 	}
 
-	// Load the JWT Secret from .env
+	// Load the Secrets from .env
 	appData, err := config.LoadAppConfig(db)
 	if err != nil {
 		log.Fatalf("App Config initialization has failed: %v", err)
 	}
-	_ = appData
+
+	// Run Database Seeder
+	if gin.Mode() == gin.DebugMode {
+		log.Println("[INFO] Running in debug mode. Executing seeder...")
+		if err := database.SeedDatabase(appData.DB); err != nil {
+			log.Printf("Database seeding failed: %v", err)
+		}
+	}
 
 	// This SetupRouter() function will contain all of our API endpoints.
 	router := routes.SetupRouter(appData)
