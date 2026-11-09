@@ -1,5 +1,4 @@
 services:
-  # Database service
   postgres:
     image: postgres:16-alpine
     environment:
@@ -11,7 +10,10 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-CHECK", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Backend service
   backend:
@@ -27,8 +29,10 @@ services:
       DB_NAME: ${DB_NAME}
       DB_SSLMODE: ${DB_SSLMODE}
       JWT_SECRET: ${JWT_SECRET}
+      IS_SECURE: ${IS_SECURE}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy # Waits for the healthcheck to pass
 
 volumes:
   pgdata:
