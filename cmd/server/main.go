@@ -50,6 +50,7 @@ func main() {
 		port = "8080" // If can't access, set a default.
 	}
 
+	log.Print("Server is successfully running.")
 	// Use that PORT here.
 	router.Run(":" + port)
 }
