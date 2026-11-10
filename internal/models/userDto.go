@@ -1,16 +1,16 @@
 package models
 
-type LoginUserRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type LoginToken struct {
 	ID        uint
 	Email     string
 	Role      string
 	FirstName string
 	LastName  string
+}
+
+type LoginUserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type LoginUserResponse struct {

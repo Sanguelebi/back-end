@@ -13,6 +13,7 @@ func LoginHandler(app *config.AppData) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req models.LoginUserRequest
 
+		// ShouldBindJSON deserializes an HTTP Request into JSON body of a Go struct.
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
 			return
@@ -24,16 +25,16 @@ func LoginHandler(app *config.AppData) gin.HandlerFunc {
 			return
 		}
 
-		// 3. Set the cookie
+		// Set the cookie
 		c.SetSameSite(http.SameSiteStrictMode)
 		c.SetCookie(
 			"token",
-			tokenString, 
-			86400,       
-			"/",         
-			"",          
+			tokenString,
+			86400,
+			"/",
+			"",
 			app.IsSecure,
-			true,        
+			true,
 		)
 
 		userResponse := models.LoginUserResponse{
@@ -47,5 +48,22 @@ func LoginHandler(app *config.AppData) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": userResponse})
+	}
+}
+
+func GetAllUsersHandler(app *config.AppData) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userRole := c.Keys["userRole"]
+		if userRole != models.RoleAdmin.String() {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not allowed to access the endpoint."})
+			return
+		}
+
+		userData, err := services.GetAllUsersService(app)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Can't get users from DB."})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "Fetched users succesfully", "users": userData})
 	}
 }

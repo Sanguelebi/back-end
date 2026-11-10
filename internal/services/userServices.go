@@ -56,3 +56,8 @@ func LoginService(email, plainPassword string, app *config.AppData) (string, mod
 	return tokenString, userResponse, nil
 }
 
+func GetAllUsersService(app *config.AppData) ([]models.Users, error) {
+	var users []models.Users
+	result := app.DB.Find(&users)
+	return users, result.Error
+}
