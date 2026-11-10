@@ -5,6 +5,8 @@ import (
 	"course-selection-platform/internal/auth"
 	"course-selection-platform/internal/models"
 	"errors"
+	"fmt"
+	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -60,4 +62,37 @@ func GetAllUsersService(app *config.AppData) ([]models.Users, error) {
 	var users []models.Users
 	result := app.DB.Find(&users)
 	return users, result.Error
+}
+
+func AddUserService(userData *models.RegisterUserRequest, app *config.AppData) (*uint, int, error) {
+	var count int64
+	err := app.DB.Model(&models.Users{}).
+		Where("email = ?", userData.Email).
+		Count(&count).Error
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if count > 0 {
+		return nil, http.StatusBadRequest, errors.New("User with this E-Mail already exists.")
+	}
+
+	if userData.StudentStatus == nil && userData.Role == models.RoleStudent {
+		return nil, http.StatusBadRequest, errors.New("Specify Student Status for the student.")
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	userData.Password = string(hashedPassword)
+
+	// Create the new user.
+	user := userData.CreateTableUser()
+	result := app.DB.Model(&models.Users{}).Create(user)
+	if result.Error != nil {
+		return nil, http.StatusInternalServerError, result.Error
+	}
+	return &user.ID, http.StatusCreated, nil
 }
