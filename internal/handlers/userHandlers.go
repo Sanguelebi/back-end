@@ -53,12 +53,6 @@ func LoginHandler(app *config.AppData) gin.HandlerFunc {
 
 func GetAllUsersHandler(app *config.AppData) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userRole := c.Keys["userRole"]
-		if userRole != models.RoleAdmin.String() {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Not allowed to access the endpoint."})
-			return
-		}
-
 		userData, err := services.GetAllUsersService(app)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Can't get users from DB."})

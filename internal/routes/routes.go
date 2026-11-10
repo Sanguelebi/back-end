@@ -33,13 +33,26 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 			})
 		})
 
-		api.GET("/users", middleware.RequireAuth(app.JWTSecret), handlers.GetAllUsersHandler(app))
+		api.GET("/users",
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.AdminOnly(),
+			handlers.GetAllUsersHandler(app),
+		)
 
 		api.GET("/subjects", handlers.GetSubjects(app.DB))
 
-		api.GET("/priority", middleware.RequireAuth(app.JWTSecret), handlers.GetPriorities(app.DB))
-		api.POST("/priority", middleware.RequireAuth(app.JWTSecret), handlers.AddPriority(app.DB))
-		api.DELETE("/priority/:id", middleware.RequireAuth(app.JWTSecret), handlers.DeletePriority(app.DB))
+		api.GET("/priority",
+			middleware.RequireAuth(app.JWTSecret),
+			handlers.GetPriorities(app.DB),
+		)
+		api.POST("/priority",
+			middleware.RequireAuth(app.JWTSecret),
+			handlers.AddPriority(app.DB),
+		)
+		api.DELETE("/priority/:id",
+			middleware.RequireAuth(app.JWTSecret),
+			handlers.DeletePriority(app.DB),
+		)
 
 		api.POST("/login", handlers.LoginHandler(app))
 	}
