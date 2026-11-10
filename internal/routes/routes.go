@@ -38,6 +38,11 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 			middleware.AdminOnly(),
 			handlers.GetAllUsersHandler(app),
 		)
+		api.POST("/user",
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.AdminOnly(),
+			handlers.AddUserHandler(app),
+		)
 
 		api.GET("/subjects", handlers.GetSubjects(app.DB))
 
@@ -59,4 +64,3 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 
 	return r
 }
-
