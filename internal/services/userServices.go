@@ -11,15 +11,15 @@ import (
 )
 
 func LoginService(email, plainPassword string, app *config.AppData) (string, models.LoginUserResponse, error) {
-    var user models.Users
+	var user models.Users
 
-    err := app.DB.Where("email = ?", email).First(&user).Error
-    if err != nil {
-        if errors.Is(err, gorm.ErrRecordNotFound) {
-            return "", models.LoginUserResponse{}, errors.New("invalid email or password")
-        }
-        return "", models.LoginUserResponse{}, err
-    }
+	err := app.DB.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", models.LoginUserResponse{}, errors.New("invalid email or password")
+		}
+		return "", models.LoginUserResponse{}, err
+	}
 
 	if len(user.Password) == 0 {
 		return "", models.LoginUserResponse{}, errors.New("invalid email or password")
@@ -34,30 +34,25 @@ func LoginService(email, plainPassword string, app *config.AppData) (string, mod
 		return "", models.LoginUserResponse{}, errors.New("invalid email or password")
 	}
 
-    userResponse := models.LoginUserResponse{
-        ID:            user.ID,
-        Email:         user.Email,
-        Role:          user.Role.String(),
-        FirstName:     user.FirstName,
-        LastName:      user.LastName,
-        PhotoUrl:      user.PhotoUrl,
-        StudentStatus: user.StudentStatus,
-    }
+	userResponse := models.LoginUserResponse{
+		ID:            user.ID,
+		Email:         user.Email,
+		Role:          user.Role.String(),
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		PhotoUrl:      user.PhotoUrl,
+		StudentStatus: user.StudentStatus,
+	}
 
-    loginDTO := models.LoginUserResponse{
-        ID:        user.ID,
-        Email:     user.Email,
-        Role:      user.Role.String(),
-        FirstName: user.FirstName,
-        LastName:  user.LastName,
-    }
+	loginDTO := userResponse.CreateLoginToken()
 
-    // Generate the token
-    tokenString, err := auth.GenerateToken(loginDTO, app.JWTSecret)
-    if err != nil {
-        return "", models.LoginUserResponse{}, err
-    }
+	// Generate the token
+	tokenString, err := auth.GenerateToken(*loginDTO, app.JWTSecret)
+	if err != nil {
+		return "", models.LoginUserResponse{}, err
+	}
 
-    // Return the string token, the response DTO, and nil for error
-    return tokenString, userResponse, nil
+	// Return the string token, the response DTO, and nil for error
+	return tokenString, userResponse, nil
 }
+
