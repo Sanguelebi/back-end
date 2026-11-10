@@ -71,6 +71,29 @@ func (s StudentStatus) String() string {
 	}
 }
 
+func (s *StudentStatus) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	switch str {
+	case "active":
+		*s = Active
+	case "inactive":
+		*s = Inactive
+	case "academicPause":
+		*s = AcademicPause
+	default:
+		return fmt.Errorf("Invalid Student Status provided: %q", s)
+	}
+	return nil
+}
+
+func (s StudentStatus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.String())
+}
+
 type Gender int
 
 const (
@@ -342,4 +365,3 @@ type InactiveRegistration struct {
 	From time.Time
 	To   time.Time
 }
-
