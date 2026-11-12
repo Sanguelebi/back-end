@@ -96,3 +96,26 @@ func AddUserService(userData *models.RegisterUserRequest, app *config.AppData) (
 	}
 	return &user.ID, http.StatusCreated, nil
 }
+
+func EditUserService(id uint, editData *models.EditUserRequest, app *config.AppData) (int, error) {
+	var user models.Users
+	err := app.DB.Model(&models.Users{}).
+		Where("id = ?", id).
+		First(&user, id).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return http.StatusNotFound, fmt.Errorf("User with this ID is not found.")
+		}
+		return http.StatusInternalServerError, err
+	}
+
+	user.ApplyEdit(editData)
+
+	err = app.DB.Save(&user).Error
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
+}

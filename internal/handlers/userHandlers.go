@@ -5,6 +5,7 @@ import (
 	"course-selection-platform/internal/models"
 	"course-selection-platform/internal/services"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -78,5 +79,30 @@ func AddUserHandler(app *config.AppData) gin.HandlerFunc {
 		}
 
 		c.JSON(status, gin.H{"message": "User created succesfully!", "id": newUserId})
+	}
+}
+
+func EditUserHandler(app *config.AppData) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req models.EditUserRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+			return
+		}
+
+		idParam := c.Param("id")
+		parsedID, err := strconv.ParseUint(idParam, 10, 0)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID Format."})
+			return
+		}
+
+		status, err := services.EditUserService(uint(parsedID), &req, app)
+		if err != nil {
+			c.JSON(status, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(status, gin.H{"message": "User edited successfully!"})
 	}
 }
