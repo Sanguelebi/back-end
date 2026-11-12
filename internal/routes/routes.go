@@ -48,6 +48,11 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 			middleware.AdminOnly(),
 			handlers.EditUserHandler(app),
 		)
+		api.DELETE("/user/:id",
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.AdminOnly(),
+			handlers.DeleteUserHandler(app),
+		)
 
 		api.GET("/subjects", handlers.GetSubjects(app.DB))
 

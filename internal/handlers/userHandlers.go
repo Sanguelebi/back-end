@@ -106,3 +106,22 @@ func EditUserHandler(app *config.AppData) gin.HandlerFunc {
 		c.JSON(status, gin.H{"message": "User edited successfully!"})
 	}
 }
+
+func DeleteUserHandler(app *config.AppData) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idParam := c.Param("id")
+		parsedID, err := strconv.ParseUint(idParam, 10, 0)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID Format."})
+			return
+		}
+
+		status, err := services.DeleteUserService(uint(parsedID), app)
+		if err != nil {
+			c.JSON(status, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(status, gin.H{"message": "User deleted successfully!"})
+	}
+}

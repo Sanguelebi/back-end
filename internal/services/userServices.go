@@ -119,3 +119,24 @@ func EditUserService(id uint, editData *models.EditUserRequest, app *config.AppD
 
 	return http.StatusOK, nil
 }
+
+func DeleteUserService(id uint, app *config.AppData) (int, error) {
+	var user models.Users
+	err := app.DB.Model(&models.Users{}).
+		Where("id = ?", id).
+		First(&user, id).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return http.StatusNotFound, fmt.Errorf("User with this ID is not found.")
+		}
+		return http.StatusInternalServerError, err
+	}
+
+	err = app.DB.Delete(&user).Error
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
+}
