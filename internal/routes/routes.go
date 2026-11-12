@@ -32,14 +32,45 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 				"message": "Pong!",
 			})
 		})
+
+		api.GET("/users",
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.AdminOnly(),
+			handlers.GetAllUsersHandler(app),
+		)
+		api.POST("/user",
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.AdminOnly(),
+			handlers.AddUserHandler(app),
+		)
+		api.PATCH("/user/:id",
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.AdminOnly(),
+			handlers.EditUserHandler(app),
+		)
+		api.DELETE("/user/:id",
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.AdminOnly(),
+			handlers.DeleteUserHandler(app),
+		)
+
 		api.GET("/subjects", handlers.GetSubjects(app.DB))
-		
-		api.GET("/priority", middleware.RequireAuth(app.JWTSecret), handlers.GetPriorities(app.DB))
-		api.POST("/priority", middleware.RequireAuth(app.JWTSecret), handlers.AddPriority(app.DB))
-		api.DELETE("/priority/:id", middleware.RequireAuth(app.JWTSecret), handlers.DeletePriority(app.DB))
-		
+
+		api.GET("/priority",
+			middleware.RequireAuth(app.JWTSecret),
+			handlers.GetPriorities(app.DB),
+		)
+		api.POST("/priority",
+			middleware.RequireAuth(app.JWTSecret),
+			handlers.AddPriority(app.DB),
+		)
+		api.DELETE("/priority/:id",
+			middleware.RequireAuth(app.JWTSecret),
+			handlers.DeletePriority(app.DB),
+		)
+
 		api.POST("/login", handlers.LoginHandler(app))
 	}
 
-	return r;
+	return r
 }

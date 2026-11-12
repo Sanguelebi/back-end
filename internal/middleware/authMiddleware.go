@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"course-selection-platform/internal/models"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -45,6 +47,18 @@ func RequireAuth(secret []byte) gin.HandlerFunc {
 			return
 		}
 
+		c.Next()
+	}
+}
+
+func AdminOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userRole := c.Keys["userRole"]
+		if userRole != models.RoleAdmin.String() {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not allowed to access the endpoint."})
+			c.Abort()
+			return
+		}
 		c.Next()
 	}
 }
