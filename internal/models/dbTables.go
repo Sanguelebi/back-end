@@ -15,11 +15,6 @@ const (
 	StatusFailed
 )
 
-const (
-	SemesterFall Semester = iota + 1
-	SemesterSpring
-)
-
 func (s Status) String() string {
 	switch s {
 	case StatusActive:
@@ -33,15 +28,16 @@ func (s Status) String() string {
 	}
 }
 
-func (s Semester) String() string {
-	switch s {
-	case SemesterFall:
-		return "fall"
-	case SemesterSpring:
-		return "spring"
-	default:
-		return ""
-	}
+func (s Semester) IsFall() bool {
+	return s%2 != 0
+}
+
+func (s Semester) IsSpring() bool {
+	return s%2 == 0
+}
+
+func (s Semester) Year() int {
+	return (int(s) + 1) / 2
 }
 
 type Faculty struct {
