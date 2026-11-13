@@ -180,7 +180,7 @@ type EnrollmentTable struct {
 	SubjectGroupID uint         `gorm:"type:integer;not null"`
 	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Year           int16        `gorm:"type:smallint;not null"`
-	Semester       Semester     `gorm:"type:smallint;not null"`
+	Semester       Semester     `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;"`
 	StudentID      uint         `gorm:"type:integer;not null"`
 	Student        Users        `gorm:"foreignKey:StudentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

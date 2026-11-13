@@ -353,7 +353,7 @@ func SeedDatabase(db *gorm.DB) error {
 				Status:         models.StatusActive,
 				SubjectGroupID: subjectGroups[0].ID,
 				Year:           2026,
-				Semester:       models.SemesterFall,
+				Semester:       1,
 				StudentID:      users[1].ID,
 			},
 		}
