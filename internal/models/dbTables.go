@@ -204,12 +204,14 @@ func (s SubjectType) String() string {
 }
 
 type ChoosableSubjects struct {
-	ID          uint        `gorm:"primaryKey;autoIncrement"`
-	FacultyID   uint        `gorm:"type:integer;not null"`
-	Faculty     Faculty     `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	SubjectID   uint        `gorm:"type:integer;not null"`
-	Subject     Subject     `gorm:"foreignKey:SubjectID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	SubjectType SubjectType `gorm:"type:smallint;not null"`
+	ID           uint        `gorm:"primaryKey;autoIncrement"`
+	FacultyID    uint        `gorm:"type:integer;not null"`
+	Faculty      Faculty     `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SubjectID    uint        `gorm:"type:integer;not null"`
+	Subject      Subject     `gorm:"foreignKey:SubjectID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SubjectType  SubjectType `gorm:"type:smallint;not null"`
+	FromSemester Semester    `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;"`
+	ToSemester   Semester    `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;"`
 }
 
 type Role int
