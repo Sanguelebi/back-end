@@ -15,11 +15,6 @@ const (
 	StatusFailed
 )
 
-const (
-	SemesterFall Semester = iota + 1
-	SemesterSpring
-)
-
 func (s Status) String() string {
 	switch s {
 	case StatusActive:
@@ -33,15 +28,16 @@ func (s Status) String() string {
 	}
 }
 
-func (s Semester) String() string {
-	switch s {
-	case SemesterFall:
-		return "fall"
-	case SemesterSpring:
-		return "spring"
-	default:
-		return ""
-	}
+func (s Semester) IsFall() bool {
+	return s%2 != 0
+}
+
+func (s Semester) IsSpring() bool {
+	return s%2 == 0
+}
+
+func (s Semester) Year() int {
+	return (int(s) + 1) / 2
 }
 
 type Faculty struct {
@@ -184,7 +180,7 @@ type EnrollmentTable struct {
 	SubjectGroupID uint         `gorm:"type:integer;not null"`
 	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Year           int16        `gorm:"type:smallint;not null"`
-	Semester       Semester     `gorm:"type:smallint;not null"`
+	Semester       Semester     `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;"`
 	StudentID      uint         `gorm:"type:integer;not null"`
 	Student        Users        `gorm:"foreignKey:StudentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
@@ -208,12 +204,14 @@ func (s SubjectType) String() string {
 }
 
 type ChoosableSubjects struct {
-	ID          uint        `gorm:"primaryKey;autoIncrement"`
-	FacultyID   uint        `gorm:"type:integer;not null"`
-	Faculty     Faculty     `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	SubjectID   uint        `gorm:"type:integer;not null"`
-	Subject     Subject     `gorm:"foreignKey:SubjectID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	SubjectType SubjectType `gorm:"type:smallint;not null"`
+	ID           uint        `gorm:"primaryKey;autoIncrement"`
+	FacultyID    uint        `gorm:"type:integer;not null"`
+	Faculty      Faculty     `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SubjectID    uint        `gorm:"type:integer;not null"`
+	Subject      Subject     `gorm:"foreignKey:SubjectID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SubjectType  SubjectType `gorm:"type:smallint;not null"`
+	FromSemester Semester    `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;"`
+	ToSemester   Semester    `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;"`
 }
 
 type Role int
