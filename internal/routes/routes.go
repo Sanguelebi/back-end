@@ -4,10 +4,15 @@ import (
 	"course-selection-platform/config"
 	"course-selection-platform/internal/handlers"
 	"course-selection-platform/internal/middleware"
-	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	// Add this blank import so the generated docs.go init() function runs
+	_ "course-selection-platform/docs"
+	"net/http"
+	"strings"
 )
 
 // The main SetupRouter function.
@@ -72,5 +77,10 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 		api.POST("/login", handlers.LoginHandler(app))
 	}
 
+	// Access to Swagger only when in Dev mode.
+	if gin.Mode() == gin.DebugMode {
+		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
+	
 	return r
 }

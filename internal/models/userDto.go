@@ -10,16 +10,16 @@ type LoginToken struct {
 
 // INFO: Required attribute adds additional security.
 type RegisterUserRequest struct {
-	Email         string         `json:"email" validate:"required,email"`
-	Password      string         `json:"password" validate:"required,min=8"`
-	Role          Role           `json:"role"`
-	FirstName     string         `json:"first_name" validate:"required"`
-	LastName      string         `json:"last_name" validate:"required"`
-	Gender        Gender         `json:"gender"`
-	PersonalNo    string         `json:"personal_no"`
-	PhoneNumber   string         `json:"phone_number"`
-	PhotoUrl      string         `json:"photo_url"`
-	StudentStatus *StudentStatus `json:"student_status,omitempty"`
+	Email         string         `json:"email" validate:"required,email" example:"student@example.com"`
+	Password      string         `json:"password" validate:"required,min=8" example:"securepassword1"`
+	Role          Role           `json:"role" swaggertype:"string" example:"student"`
+	FirstName     string         `json:"first_name" validate:"required" example:"Mariam"`
+	LastName      string         `json:"last_name" validate:"required" example:"Mikava"`
+	Gender        Gender         `json:"gender" swaggertype:"string" example:"active"`
+	PersonalNo    string         `json:"personal_no" example:"01032010121"`
+	PhoneNumber   string         `json:"phone_number" example:"+9955111092345"`
+	PhotoUrl      string         `json:"photo_url" example:"http://link_to_photo"`
+	StudentStatus *StudentStatus `json:"student_status,omitempty" swaggertype:"string" example:"active"`
 }
 
 func (r *RegisterUserRequest) CreateTableUser() *Users {
@@ -39,15 +39,15 @@ func (r *RegisterUserRequest) CreateTableUser() *Users {
 
 // INFO: Only dirtyFields will be sent over from Front-End.
 type EditUserRequest struct {
-	Email         *string        `json:"email,omitempty"`
-	Role          *Role          `json:"role,omitempty"`
-	FirstName     *string        `json:"first_name,omitempty"`
-	LastName      *string        `json:"last_name,omitempty"`
-	Gender        *Gender        `json:"gender,omitempty"`
-	PersonalNo    *string        `json:"personal_no,omitempty"`
-	PhoneNumber   *string        `json:"phone_number,omitempty"`
-	PhotoUrl      *string        `json:"photo_url,omitempty"`
-	StudentStatus *StudentStatus `json:"student_status,omitempty"`
+	Email         *string        `json:"email,omitempty" example:"student@example.com"`
+	Role          *Role          `json:"role,omitempty" swaggertype:"string" example:"student"`
+	FirstName     *string        `json:"first_name,omitempty" example:"Mariam"`
+	LastName      *string        `json:"last_name,omitempty" example:"Mikava"`
+	Gender        *Gender        `json:"gender,omitempty" swaggertype:"string" example:"active"`
+	PersonalNo    *string        `json:"personal_no,omitempty" example:"01032010121"`
+	PhoneNumber   *string        `json:"phone_number,omitempty" example:"+9955111092345"`
+	PhotoUrl      *string        `json:"photo_url,omitempty" example:"http://link_to_photo"`
+	StudentStatus *StudentStatus `json:"student_status,omitempty" swaggertype:"string" example:"active"`
 }
 
 func (u *Users) ApplyEdit(e *EditUserRequest) {
@@ -83,18 +83,18 @@ func (u *Users) ApplyEdit(e *EditUserRequest) {
 }
 
 type LoginUserRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=8"`
+	Email    string `json:"email" validate:"required,email" example:"student@example.com"`
+	Password string `json:"password" validate:"required,min=8" example:"securepassword123"`
 }
 
 type LoginUserResponse struct {
-	ID            uint           `json:"id"`
-	Email         string         `json:"email"`
-	Role          string         `json:"role"`
-	FirstName     string         `json:"first_name"`
-	LastName      string         `json:"last_name"`
-	PhotoUrl      string         `json:"photo_url"`
-	StudentStatus *StudentStatus `json:"student_status,omitempty"`
+	ID            uint           `json:"id" example:"1"`
+	Email         string         `json:"email" example:"student@example.com"`
+	Role          string         `json:"role" example:"1"`
+	FirstName     string         `json:"first_name" example:"John"`
+	LastName      string         `json:"last_name" example:"Doe"`
+	PhotoUrl      string         `json:"photo_url" example:"http://link_to_image"`
+	StudentStatus *StudentStatus `json:"student_status,omitempty" swaggertype:"string" example:"active"`
 }
 
 func (l *LoginUserResponse) CreateLoginToken() *LoginToken {
