@@ -18,7 +18,8 @@ jobs:
 
       - name: Create .env for Docker Compose
         run: |
-          echo "GIN_MODE=release" >> .env
+          echo "BUILD_TARGET=dev" > .env
+          echo "GIN_MODE=debug" >> .env
           echo "PORT=8080" >> .env
           echo "DB_HOST=postgres" >> .env
           echo "DB_PORT=5432" >> .env
@@ -27,13 +28,17 @@ jobs:
           echo "DB_NAME=course_selection_db" >> .env
           echo "DB_SSLMODE=prefer" >> .env
           echo "JWT_SECRET=your_jwt_secret_key_here" >> .env
+          echo "IS_SECURE=false" >> .env
 
       - name: Start Docker Compose
         run: docker compose up --build -d
 
       - name: Check Running Containers
-        run: docker compose ps
+        run: |
+          sleep 5
+          docker compose ps
+          docker compose logs backend
 
       - name: Tear Down Docker Compose
         if: always()
-        run: docker compose down
+        run: docker compose down -v
