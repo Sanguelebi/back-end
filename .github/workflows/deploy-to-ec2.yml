@@ -44,4 +44,4 @@ jobs:
 
       # Moved after the build so Docker reuses your Go module and build caches
       - name: Cleanup Unused Docker Resources
-        run: docker system prune -f
+        run: docker image prune -f
