@@ -1,0 +1,503 @@
+basePath: /api
+definitions:
+  models.EditUserRequest:
+    properties:
+      email:
+        example: student@example.com
+        type: string
+      first_name:
+        example: Mariam
+        type: string
+      gender:
+        example: active
+        type: string
+      last_name:
+        example: Mikava
+        type: string
+      personal_no:
+        example: "01032010121"
+        type: string
+      phone_number:
+        example: "+9955111092345"
+        type: string
+      photo_url:
+        example: http://link_to_photo
+        type: string
+      role:
+        example: student
+        type: string
+      student_status:
+        example: active
+        type: string
+    type: object
+  models.JsonAddUserResponse:
+    properties:
+      id:
+        example: 2
+        type: integer
+      message:
+        example: User added succesfully!
+        type: string
+    type: object
+  models.JsonErrorResponse:
+    properties:
+      error:
+        example: Invalid request format
+        type: string
+    type: object
+  models.JsonGetPrioritiesResponse:
+    properties:
+      message:
+        example: Priority list fetched succesfully!
+        type: string
+      priorities:
+        items:
+          $ref: '#/definitions/models.StudentPriorityList'
+        type: array
+    type: object
+  models.JsonGetSubjectsResponse:
+    properties:
+      message:
+        example: Subjects fetched succesfully!
+        type: string
+      subjects:
+        items:
+          $ref: '#/definitions/models.Subject'
+        type: array
+    type: object
+  models.JsonGetUsersResponse:
+    properties:
+      message:
+        example: Fetched users succesfully!
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/models.Users'
+        type: array
+    type: object
+  models.JsonLoginResponse:
+    properties:
+      message:
+        example: User logged in succesfully!
+        type: string
+      user:
+        $ref: '#/definitions/models.LoginUserResponse'
+    type: object
+  models.JsonSuccesfulResponse:
+    properties:
+      message:
+        example: The action has been executed succesfully!
+        type: string
+    type: object
+  models.LoginUserRequest:
+    properties:
+      email:
+        example: student@example.com
+        type: string
+      password:
+        example: securepassword123
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.LoginUserResponse:
+    properties:
+      email:
+        example: student@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      id:
+        example: 1
+        type: integer
+      last_name:
+        example: Doe
+        type: string
+      photo_url:
+        example: http://link_to_image
+        type: string
+      role:
+        example: "1"
+        type: string
+      student_status:
+        example: active
+        type: string
+    type: object
+  models.PriorityRequest:
+    properties:
+      subject_group_id:
+        example: 2
+        type: integer
+    type: object
+  models.RegisterUserRequest:
+    properties:
+      email:
+        example: student@example.com
+        type: string
+      first_name:
+        example: Mariam
+        type: string
+      gender:
+        example: active
+        type: string
+      last_name:
+        example: Mikava
+        type: string
+      password:
+        example: securepassword1
+        minLength: 8
+        type: string
+      personal_no:
+        example: "01032010121"
+        type: string
+      phone_number:
+        example: "+9955111092345"
+        type: string
+      photo_url:
+        example: http://link_to_photo
+        type: string
+      role:
+        example: student
+        type: string
+      student_status:
+        example: active
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    type: object
+  models.StudentPriorityList:
+    properties:
+      id:
+        example: 1
+        type: integer
+      priority:
+        example: 1
+        type: integer
+      studentId:
+        example: 2
+        type: integer
+      subjectGroupId:
+        example: 2
+        type: integer
+    type: object
+  models.Subject:
+    properties:
+      credit:
+        example: 8
+        type: integer
+      description:
+        example: საგნის აღწერა
+        type: string
+      facultyID:
+        example: 1
+        type: integer
+      id:
+        type: integer
+      name:
+        example: კომპიუტერული მეცნიერება
+        type: string
+      syllabusPdfURL:
+        example: http://link_to_syllabus_pdf
+        type: string
+    type: object
+  models.Users:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      gender:
+        example: male
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      personal_no:
+        type: string
+      phone_number:
+        type: string
+      photo_url:
+        type: string
+      role:
+        example: student
+        type: string
+      student_status:
+        example: active
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API endpoints for the course selection platform.
+  title: Course Selection API
+paths:
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a JWT token in an HttpOnly cookie
+      parameters:
+      - description: Login Credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.JsonLoginResponse'
+        "400":
+          description: 'Error returned will be: ''Invalid request format'''
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "401":
+          description: 'Error returned will be: ''Invalid email or password'''
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      summary: Login
+      tags:
+      - auth
+  /api/priority:
+    get:
+      description: Retrieves a list of priorities for the logged-in student
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JsonGetPrioritiesResponse'
+            type: array
+        "401":
+          description: 'Error returned will be: ''Unauthorized from access.'''
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get priorities
+      tags:
+      - priority
+    post:
+      consumes:
+      - application/json
+      description: Creates a new priority for the logged-in student
+      parameters:
+      - description: Priority Data
+        in: body
+        name: priority
+        required: true
+        schema:
+          $ref: '#/definitions/models.PriorityRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.JsonSuccesfulResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "401":
+          description: 'Error returned will be: ''Unauthorized.'''
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add priority
+      tags:
+      - priority
+  /api/priority/{id}:
+    delete:
+      description: Deletes a priority by ID and re-indexes the remaining priorities
+      parameters:
+      - description: Priority ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Priority deleted and re-indexed
+          schema:
+            $ref: '#/definitions/models.JsonSuccesfulResponse'
+        "400":
+          description: Service error
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete priority
+      tags:
+      - priority
+  /api/subjects:
+    get:
+      description: Retrieves a list of all available subjects, with optional query
+        filters
+      parameters:
+      - description: Filter by faculty
+        in: query
+        name: faculty
+        type: string
+      - description: Filter by subject name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JsonGetSubjectsResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      summary: Get all subjects
+      tags:
+      - subjects
+  /api/user:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user in the system. Requires Admin privileges.
+      parameters:
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.JsonAddUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add a new user
+      tags:
+      - users
+  /api/user/{id}:
+    delete:
+      description: Deletes a user by ID. Requires Admin privileges.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted succesfully!
+          schema:
+            $ref: '#/definitions/models.JsonSuccesfulResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a user
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing user by ID. Requires Admin privileges.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.EditUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User edited succesfully!
+          schema:
+            $ref: '#/definitions/models.JsonSuccesfulResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Edit a user
+      tags:
+      - users
+  /api/users:
+    get:
+      description: Retrieves a list of all users. Requires Admin privileges.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.JsonGetUsersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - users
+  /ping:
+    get:
+      description: Returns a Pong message to check if the server is alive
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Pong!
+          schema:
+            $ref: '#/definitions/models.JsonSuccesfulResponse'
+      summary: Ping the server
+      tags:
+      - system
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
