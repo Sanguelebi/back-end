@@ -502,6 +502,10 @@ const docTemplate = `{
         "models.JsonGetSubjectsResponse": {
             "type": "object",
             "properties": {
+                "has_more": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "message": {
                     "type": "string",
                     "example": "Subjects fetched succesfully!"

@@ -16,13 +16,23 @@ func GetSubjects(db *gorm.DB) gin.HandlerFunc {
 		faculty := c.Query("faculty")
 		name := c.Query("name")
 
-		subjects, err := services.GetAllSubjects(db, faculty, name)
+		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+		if err != nil || page < 1 {
+			page = 1
+		}
+
+		pageSize, err := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+		if err != nil || pageSize < 1 {
+			pageSize = 10
+		}
+
+		subjects, hasMore, err := services.GetAllSubjects(db, faculty, name, page, pageSize)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "Got subjects succesfully!", "subjects": subjects})
+		c.JSON(http.StatusOK, gin.H{"message": "Got subjects succesfully!", "subjects": subjects, "has_more": hasMore})
 	}
 }
 
@@ -83,3 +93,4 @@ func DeletePriority(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"message": "Priority deleted and re-indexed"})
 	}
 }
+

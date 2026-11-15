@@ -41,9 +41,10 @@ func (s Semester) Year() int {
 }
 
 type Faculty struct {
-	ID          uint   `gorm:"primaryKey;autoIncrement"`
-	Name        string `gorm:"type:varchar(255);not null"`
-	Description string `gorm:"type:varchar(255);not null"`
+	ID          uint    `gorm:"primaryKey;autoIncrement"`
+	Name        string  `gorm:"type:varchar(255);not null"`
+	Description string  `gorm:"type:varchar(255);not null"`
+	PhotoURL    *string `gorm:"type:text"`
 }
 
 type StudentStatus int
@@ -197,8 +198,8 @@ type ChoosableSubjects struct {
 	SubjectID    uint        `gorm:"type:integer;not null"`
 	Subject      Subject     `gorm:"foreignKey:SubjectID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	SubjectType  SubjectType `gorm:"type:smallint;not null"`
-	FromSemester Semester    `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;"`
-	ToSemester   Semester    `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;"`
+	FromSemester Semester    `gorm:"type:smallint;not null;check:from_semester BETWEEN 1 AND 16;"`
+	ToSemester   Semester    `gorm:"type:smallint;not null;check:to_semester BETWEEN 1 AND 16;"`
 }
 
 type Role int

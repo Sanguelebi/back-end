@@ -57,6 +57,9 @@ definitions:
     type: object
   models.JsonGetSubjectsResponse:
     properties:
+      has_more:
+        example: true
+        type: boolean
       message:
         example: Subjects fetched succesfully!
         type: string
