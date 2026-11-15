@@ -22,7 +22,7 @@ func GetSubjects(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, subjects)
+		c.JSON(http.StatusOK, gin.H{"message": "Got subjects succesfully!", "subjects": subjects})
 	}
 }
 
@@ -30,7 +30,7 @@ func GetPriorities(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		val, exists := c.Get("userID")
 		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: user ID missing from context"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized from access."})
 			return
 		}
 
@@ -42,7 +42,7 @@ func GetPriorities(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, priorities)
+		c.JSON(http.StatusOK, gin.H{"message": "Priorities fetched succesfully.", "priorities": priorities})
 	}
 }
 
