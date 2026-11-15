@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-//go:generate go run github.com/swaggo/swag/cmd/swag@latest init -d ../../swagger_source,../../internal/models -g api_info.go -o ../../docs --parseInternal
+//go:generate swag init -d ../../swagger_source,../../internal/models -g api_info.go -o ../../docs --parseInternal
 
 func main() {
 	// Load .env values first
