@@ -11,6 +11,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+//go:generate go run github.com/swaggo/swag/cmd/swag@latest init -d ../../swagger_source,../../internal/models -g api_info.go -o ../../docs --parseInternal
+
 func main() {
 	// Load .env values first
 	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {

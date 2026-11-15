@@ -1,38 +1,21 @@
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "${DB_PORT}:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  # Backend service
-  backend:
-    build: .
-    ports:
-      - "${PORT}:${PORT}"
-    environment:
-      GIN_MODE: ${GIN_MODE}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: 5432
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_SSLMODE: ${DB_SSLMODE}
-      JWT_SECRET: ${JWT_SECRET}
-      IS_SECURE: ${IS_SECURE}
-    depends_on:
-      postgres:
-        condition: service_healthy # Waits for the healthcheck to pass
-
-volumes:
-  pgdata:
+# Backend service
+backend:
+  build: .
+  ports:
+    - "${PORT}:${PORT}"
+  environment:
+    GIN_MODE: ${GIN_MODE}
+    DB_HOST: ${DB_HOST}
+    DB_PORT: 5432
+    DB_USER: ${DB_USER}
+    DB_PASSWORD: ${DB_PASSWORD}
+    DB_NAME: ${DB_NAME}
+    DB_SSLMODE: ${DB_SSLMODE}
+    JWT_SECRET: ${JWT_SECRET}
+    IS_SECURE: ${IS_SECURE}
+  # Now checks if GIN_MODE equals "debug"
+  command:
+    sh -c 'if [ "$GIN_MODE" = "debug" ]; then echo "Debug mode: Generating Swagger..."; go generate ./...; fi; exec go run cmd/server/main.go'
+  depends_on:
+    postgres:
+      condition: service_healthy
