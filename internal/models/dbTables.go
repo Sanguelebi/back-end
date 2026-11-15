@@ -1,5 +1,11 @@
 package models
 
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+)
+
 type Status int
 type Semester int
 
@@ -7,11 +13,6 @@ const (
 	StatusActive Status = iota + 1
 	StatusPassed
 	StatusFailed
-)
-
-const (
-	SemesterFall Semester = iota + 1
-	SemesterSpring
 )
 
 func (s Status) String() string {
@@ -27,63 +28,148 @@ func (s Status) String() string {
 	}
 }
 
-func (s Semester) String() string {
+func (s Semester) IsFall() bool {
+	return s%2 != 0
+}
+
+func (s Semester) IsSpring() bool {
+	return s%2 == 0
+}
+
+func (s Semester) Year() int {
+	return (int(s) + 1) / 2
+}
+
+type Faculty struct {
+	ID          uint    `gorm:"primaryKey;autoIncrement"`
+	Name        string  `gorm:"type:varchar(255);not null"`
+	Description string  `gorm:"type:varchar(255);not null"`
+	PhotoURL    *string `gorm:"type:text"`
+}
+
+type StudentStatus int
+
+const (
+	Active StudentStatus = iota + 1
+	Inactive
+	AcademicPause
+)
+
+func (s StudentStatus) String() string {
 	switch s {
-	case SemesterFall:
-		return "fall"
-	case SemesterSpring:
-		return "spring"
+	case Active:
+		return "active"
+	case Inactive:
+		return "inactive"
+	case AcademicPause:
+		return "academicPause"
 	default:
 		return ""
 	}
 }
 
-type Faculty struct {
-	ID          int32  `gorm:"primaryKey;autoIncrement"`
-	Name        string `gorm:"type:varchar(255);not null"`
-	Description string `gorm:"type:varchar(255);not null"`
+func (s *StudentStatus) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	switch str {
+	case "active":
+		*s = Active
+	case "inactive":
+		*s = Inactive
+	case "academicPause":
+		*s = AcademicPause
+	default:
+		return fmt.Errorf("Invalid Student Status provided: %q", s)
+	}
+	return nil
+}
+
+func (s StudentStatus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.String())
+}
+
+type Gender int
+
+const (
+	Male Gender = iota + 1
+	Female
+)
+
+func (g Gender) String() string {
+	switch g {
+	case Male:
+		return "male"
+	case Female:
+		return "female"
+	default:
+		return ""
+	}
+}
+
+func (g *Gender) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	switch s {
+	case "male":
+		*g = Male
+	case "female":
+		*g = Female
+	default:
+		return fmt.Errorf("Invalid Gender provided: %q", s)
+	}
+	return nil
+}
+
+func (g Gender) MarshalJSON() ([]byte, error) {
+	return json.Marshal(g.String())
 }
 
 type Users struct {
-	ID            int32   `gorm:"primaryKey;autoIncrement"`
-	Email         string  `gorm:"type:varchar(254);not null;unique"`
-	Password      string  `gorm:"type:varchar(255);not null"`
-	Role          Role    `gorm:"type:smallint;not null"`
-	FirstName     string  `gorm:"type:varchar(255);not null"`
-	LastName      string  `gorm:"type:varchar(255);not null"`
-	Gender        string  `gorm:"type:varchar(255);not null"`
-	PersonalNo    string  `gorm:"type:varchar(255);not null"`
-	PhoneNumber   string  `gorm:"type:varchar(255);not null"`
-	PhotoUrl      string  `gorm:"type:text;not null"`
-	AcademicPause *bool   `gorm:"type:boolean"`
+	ID            uint           `gorm:"primaryKey;autoIncrement" json:"id"`
+	Email         string         `gorm:"type:varchar(254);not null;unique" json:"email"`
+	Password      string         `gorm:"type:varchar(255);not null" json:"-"`
+	Role          Role           `gorm:"type:smallint;not null" json:"role" swaggertype:"string" example:"student"`
+	FirstName     string         `gorm:"type:varchar(255);not null" json:"first_name"`
+	LastName      string         `gorm:"type:varchar(255);not null" json:"last_name"`
+	Gender        Gender         `gorm:"type:smallint;not null" json:"gender" swaggertype:"string" example:"male"`
+	PersonalNo    string         `gorm:"type:varchar(255);not null" json:"personal_no"`
+	PhoneNumber   string         `gorm:"type:varchar(255);not null" json:"phone_number"`
+	PhotoUrl      string         `gorm:"type:text;not null" json:"photo_url"`
+	StudentStatus *StudentStatus `gorm:"type:smallint" json:"student_status" swaggertype:"string" example:"active"`
 }
 
 type Subject struct {
-	ID             int32    `gorm:"primaryKey;autoIncrement"`
-	Name           string   `gorm:"type:varchar(255);not null"`
-	Description    string   `gorm:"type:varchar(255);not null"`
-	Credit         int32    `gorm:"type:integer;not null"`
-	FacultyID      int32    `gorm:"type:integer;not null"`
-	Faculty        Faculty  `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
-	SyllabusPdfURL *string  `gorm:"type:text"`
+	ID             uint    `gorm:"primaryKey;autoIncrement"`
+	Name           string  `gorm:"type:varchar(255);not null" example:"კომპიუტერული მეცნიერება"`
+	Description    string  `gorm:"type:varchar(255);not null" example:"საგნის აღწერა"`
+	Credit         int32   `gorm:"type:integer;not null" example:"8"`
+	FacultyID      uint    `gorm:"type:integer;not null" example:"1"`
+	Faculty        Faculty `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"-"`
+	SyllabusPdfURL *string `gorm:"type:text" example:"http://link_to_syllabus_pdf"`
 }
 
 type SubjectPrerequisite struct {
-	SubjectId             int32   `gorm:"primaryKey;type:integer;not null"`
+	SubjectId             uint    `gorm:"primaryKey;type:integer;not null"`
 	Subject               Subject `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	SubjectPrerequisiteId int32   `gorm:"primaryKey;type:integer;not null"`
+	SubjectPrerequisiteId uint    `gorm:"primaryKey;type:integer;not null"`
 	PrerequisiteSubject   Subject `gorm:"foreignKey:SubjectPrerequisiteId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	BucketId              int32   `gorm:"type:integer;not null"`
+	BucketId              uint    `gorm:"type:integer;not null"`
 }
 
 type EnrollmentTable struct {
-	ID             int32        `gorm:"primaryKey;autoIncrement"`
+	ID             uint         `gorm:"primaryKey;autoIncrement"`
 	Status         Status       `gorm:"type:smallint;not null"`
-	SubjectGroupID int32        `gorm:"type:integer;not null"`
+	SubjectGroupID uint         `gorm:"type:integer;not null"`
 	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Year           int16        `gorm:"type:smallint;not null"`
-	Semester       Semester     `gorm:"type:smallint;not null"`
-	StudentID      int32        `gorm:"type:integer;not null"`
+	Semester       Semester     `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;"`
+	StudentID      uint         `gorm:"type:integer;not null"`
 	Student        Users        `gorm:"foreignKey:StudentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
@@ -106,12 +192,14 @@ func (s SubjectType) String() string {
 }
 
 type ChoosableSubjects struct {
-	ID          int32       `gorm:"primaryKey;autoIncrement"`
-	FacultyID   int32       `gorm:"type:integer;not null"`
-	Faculty     Faculty     `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	SubjectID   int32       `gorm:"type:integer;not null"`
-	Subject     Subject     `gorm:"foreignKey:SubjectID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	SubjectType SubjectType `gorm:"type:smallint;not null"`
+	ID           uint        `gorm:"primaryKey;autoIncrement"`
+	FacultyID    uint        `gorm:"type:integer;not null"`
+	Faculty      Faculty     `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SubjectID    uint        `gorm:"type:integer;not null"`
+	Subject      Subject     `gorm:"foreignKey:SubjectID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SubjectType  SubjectType `gorm:"type:smallint;not null"`
+	FromSemester Semester    `gorm:"type:smallint;not null;check:from_semester BETWEEN 1 AND 16;"`
+	ToSemester   Semester    `gorm:"type:smallint;not null;check:to_semester BETWEEN 1 AND 16;"`
 }
 
 type Role int
@@ -138,8 +226,33 @@ func (s Role) String() string {
 	}
 }
 
+func (r *Role) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	switch s {
+	case "student":
+		*r = RoleStudent
+	case "admin":
+		*r = RoleAdmin
+	case "manager":
+		*r = RoleManager
+	case "coordinator":
+		*r = RoleCordinator
+	default:
+		return fmt.Errorf("Invalid role provided: %q", s)
+	}
+	return nil
+}
+
+func (s Role) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.String())
+}
+
 type Lecturer struct {
-	ID          int32   `gorm:"primaryKey;autoIncrement"`
+	ID          uint    `gorm:"primaryKey;autoIncrement"`
 	FirstName   string  `gorm:"type:varchar(255);not null"`
 	LastName    string  `gorm:"type:varchar(255);not null"`
 	Description string  `gorm:"type:text;not null"`
@@ -165,24 +278,76 @@ func (s LectureType) String() string {
 }
 
 type SubjectGroup struct {
-	ID          int32       `gorm:"primaryKey;autoIncrement"`
+	ID          uint        `gorm:"primaryKey;autoIncrement"`
 	GroupNo     int16       `gorm:"type:smallint;not null"`
-	SubjectId   int32       `gorm:"type:integer;not null"`
+	SubjectId   uint        `gorm:"type:integer;not null"`
 	Subject     Subject     `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Day         int8        `gorm:"type:smallint;not null"`
 	From        string      `gorm:"type:varchar(5);not null"`
 	To          string      `gorm:"type:varchar(5);not null"`
 	MaxStudent  int8        `gorm:"type:smallint;not null"`
 	LectureType LectureType `gorm:"type:smallint;not null"`
-	LecturerId  int32       `gorm:"type:integer;not null"`
+	LecturerId  uint        `gorm:"type:integer;not null"`
 	Lecturer    Lecturer    `gorm:"foreignKey:LecturerId;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 }
 
 type StudentPriorityList struct {
-	ID             int32        `gorm:"primaryKey;autoIncrement"`
-	Priority       int16        `gorm:"type:smallint;not null"`
-	SubjectGroupId int32        `gorm:"type:integer;not null"`
-	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	StudentId      int32        `gorm:"type:integer;not null"`
-	Student        Users        `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ID             uint         `gorm:"primaryKey;autoIncrement" example:"1"`
+	Priority       int16        `gorm:"type:smallint;not null" example:"1"`
+	SubjectGroupId uint         `gorm:"type:integer;not null" example:"2"`
+	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	StudentId      uint         `gorm:"type:integer;not null" example:"2"`
+	Student        Users        `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+}
+
+type LecturerRating struct {
+	ID         uint     `gorm:"primaryKey;autoIncrement"`
+	LecturerId uint     `gorm:"type:integer;not null"`
+	Lecturer   Lecturer `gorm:"foreignKey:LecturerId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Rating     int16    `gorm:"type:integer;not null"`
+}
+
+type Vote int
+
+const (
+	Like Vote = iota + 1
+	Dislike
+)
+
+func (s Vote) String() string {
+	switch s {
+	case Like:
+		return "like"
+	case Dislike:
+		return "dislike"
+	default:
+		return ""
+	}
+}
+
+type SubjectRecommendation struct {
+	ID        uint    `gorm:"primaryKey;autoIncrement"`
+	SubjectId uint    `gorm:"type:integer;not null"`
+	Subject   Subject `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	UserId    uint    `gorm:"type:integer;not null"`
+	VoteType  Vote    `gorm:"not null"`
+}
+
+type SubjectDifficulty struct {
+	ID              uint    `gorm:"primaryKey;autoIncrement"`
+	SubjectId       uint    `gorm:"type:integer;not null"`
+	Subject         Subject `gorm:"foreignKey:SubjectId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	DifficultyScale int16   `gorm:"type:integer;not null"`
+}
+
+type ActiveRegistration struct {
+	ID   uint `gorm:"primaryKey;autoIncrement"`
+	From time.Time
+	To   time.Time
+}
+
+type InactiveRegistration struct {
+	ID   uint `gorm:"primaryKey;autoIncrement"`
+	From time.Time
+	To   time.Time
 }

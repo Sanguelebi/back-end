@@ -25,22 +25,27 @@ func ConnectDB(cfg *config.DBConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("get underlying database connection: %w", err)
 	}
-	
+
 	if err := sqlDB.Ping(); err != nil {
 		_ = sqlDB.Close()
 		return nil, fmt.Errorf("ping database: %w", err)
 	}
-	
+
 	db.AutoMigrate(
-		&models.Faculty{}, 
-		&models.Users{}, 
-		&models.Subject{}, 
-		&models.EnrollmentTable{}, 
-		&models.ChoosableSubjects{}, 
-		&models.SubjectPrerequisite{}, 
-		&models.Lecturer{}, 
-		&models.SubjectGroup{}, 
+		&models.Faculty{},
+		&models.Users{},
+		&models.Subject{},
+		&models.EnrollmentTable{},
+		&models.ChoosableSubjects{},
+		&models.SubjectPrerequisite{},
+		&models.Lecturer{},
+		&models.SubjectGroup{},
 		&models.StudentPriorityList{},
+		&models.LecturerRating{},
+		&models.SubjectDifficulty{},
+		&models.SubjectRecommendation{},
+		&models.ActiveRegistration{},
+		&models.InactiveRegistration{},
 	)
 
 	sqlDB.SetMaxIdleConns(10)

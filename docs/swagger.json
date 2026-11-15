@@ -1,0 +1,757 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API endpoints for the course selection platform.",
+        "title": "Course Selection API",
+        "contact": {}
+    },
+    "host": "localhost:8080",
+    "basePath": "/api",
+    "paths": {
+        "/api/login": {
+            "post": {
+                "description": "Authenticate a user and return a JWT token in an HttpOnly cookie",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "Login Credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonLoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Error returned will be: 'Invalid request format'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error returned will be: 'Invalid email or password'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/priority": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of priorities for the logged-in student",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "priority"
+                ],
+                "summary": "Get priorities",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JsonGetPrioritiesResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Error returned will be: 'Unauthorized from access.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new priority for the logged-in student",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "priority"
+                ],
+                "summary": "Add priority",
+                "parameters": [
+                    {
+                        "description": "Priority Data",
+                        "name": "priority",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.PriorityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error returned will be: 'Unauthorized.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/priority/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a priority by ID and re-indexes the remaining priorities",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "priority"
+                ],
+                "summary": "Delete priority",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Priority ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Priority deleted and re-indexed",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Service error",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/subjects": {
+            "get": {
+                "description": "Retrieves a list of all available subjects, with optional query filters",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subjects"
+                ],
+                "summary": "Get all subjects",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by faculty",
+                        "name": "faculty",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by subject name",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JsonGetSubjectsResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new user in the system. Requires Admin privileges.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Add a new user",
+                "parameters": [
+                    {
+                        "description": "User Data",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RegisterUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonAddUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a user by ID. Requires Admin privileges.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Delete a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User deleted succesfully!",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates an existing user by ID. Requires Admin privileges.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Edit a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated User Data",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.EditUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User edited succesfully!",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of all users. Requires Admin privileges.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get all users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonGetUsersResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "description": "Returns a Pong message to check if the server is alive",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Ping the server",
+                "responses": {
+                    "200": {
+                        "description": "Pong!",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.EditUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "student@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "Mariam"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "active"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Mikava"
+                },
+                "personal_no": {
+                    "type": "string",
+                    "example": "01032010121"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+9955111092345"
+                },
+                "photo_url": {
+                    "type": "string",
+                    "example": "http://link_to_photo"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "student"
+                },
+                "student_status": {
+                    "type": "string",
+                    "example": "active"
+                }
+            }
+        },
+        "models.JsonAddUserResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "message": {
+                    "type": "string",
+                    "example": "User added succesfully!"
+                }
+            }
+        },
+        "models.JsonErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Invalid request format"
+                }
+            }
+        },
+        "models.JsonGetPrioritiesResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Priority list fetched succesfully!"
+                },
+                "priorities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.StudentPriorityList"
+                    }
+                }
+            }
+        },
+        "models.JsonGetSubjectsResponse": {
+            "type": "object",
+            "properties": {
+                "has_more": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Subjects fetched succesfully!"
+                },
+                "subjects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Subject"
+                    }
+                }
+            }
+        },
+        "models.JsonGetUsersResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Fetched users succesfully!"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Users"
+                    }
+                }
+            }
+        },
+        "models.JsonLoginResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "User logged in succesfully!"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.LoginUserResponse"
+                }
+            }
+        },
+        "models.JsonSuccesfulResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "The action has been executed succesfully!"
+                }
+            }
+        },
+        "models.LoginUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "student@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "securepassword123"
+                }
+            }
+        },
+        "models.LoginUserResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "student@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "photo_url": {
+                    "type": "string",
+                    "example": "http://link_to_image"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "1"
+                },
+                "student_status": {
+                    "type": "string",
+                    "example": "active"
+                }
+            }
+        },
+        "models.PriorityRequest": {
+            "type": "object",
+            "properties": {
+                "subject_group_id": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "models.RegisterUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "student@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "Mariam"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "active"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Mikava"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "securepassword1"
+                },
+                "personal_no": {
+                    "type": "string",
+                    "example": "01032010121"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+9955111092345"
+                },
+                "photo_url": {
+                    "type": "string",
+                    "example": "http://link_to_photo"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "student"
+                },
+                "student_status": {
+                    "type": "string",
+                    "example": "active"
+                }
+            }
+        },
+        "models.StudentPriorityList": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "priority": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "studentId": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "subjectGroupId": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "models.Subject": {
+            "type": "object",
+            "properties": {
+                "credit": {
+                    "type": "integer",
+                    "example": 8
+                },
+                "description": {
+                    "type": "string",
+                    "example": "საგნის აღწერა"
+                },
+                "facultyID": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "კომპიუტერული მეცნიერება"
+                },
+                "syllabusPdfURL": {
+                    "type": "string",
+                    "example": "http://link_to_syllabus_pdf"
+                }
+            }
+        },
+        "models.Users": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "personal_no": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "photo_url": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "student"
+                },
+                "student_status": {
+                    "type": "string",
+                    "example": "active"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

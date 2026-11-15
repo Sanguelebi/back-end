@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"gorm.io/gorm"
 )
 
 // This will be the main config for DB connection.
@@ -15,6 +17,30 @@ type DBConfig struct {
 	Password string
 	Name     string
 	SSLMode  string
+}
+
+type AppData struct {
+	JWTSecret []byte
+	IsSecure bool
+	DB *gorm.DB
+}
+
+func LoadAppConfig(db *gorm.DB) (*AppData, error) {
+	jwt_secret := os.Getenv("JWT_SECRET")
+	if jwt_secret == "" {
+		return nil, fmt.Errorf("JWT Secret does not exist.")
+	}
+
+	cookieIsSecure, err := strconv.ParseBool(os.Getenv("IS_SECURE"))
+	if err != nil {
+		return nil, err
+	}
+
+	return &AppData{
+		JWTSecret: []byte(jwt_secret),
+		DB: db,
+		IsSecure: cookieIsSecure,
+	}, nil
 }
 
 // LoadDBConfig is the function that will populate the DBConfig and return the object of it.
