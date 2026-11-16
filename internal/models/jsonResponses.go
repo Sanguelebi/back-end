@@ -29,8 +29,14 @@ type JsonLoginResponse struct {
 
 type JsonGetSubjectsResponse struct {
 	Message  string    `json:"message" example:"Subjects fetched succesfully!"`
-	HasMore bool `json:"has_more" example:"true"`
+	HasMore  bool      `json:"has_more" example:"true"`
 	Subjects []Subject `json:"subjects"`
+}
+
+// ==== FACULTIES ====
+type JsonGetFacultiesResponse struct {
+	Message   string    `json:"message" example:"Faculties fetched succesfully!"`
+	Faculties []Faculty `json:"faculties"`
 }
 
 // ==== PRIORITIES ====
@@ -39,4 +45,3 @@ type JsonGetPrioritiesResponse struct {
 	Message    string                `json:"message" example:"Priority list fetched succesfully!"`
 	Priorities []StudentPriorityList `json:"priorities"`
 }
-
