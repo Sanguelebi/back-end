@@ -60,6 +60,7 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 		)
 
 		api.GET("/subjects", handlers.GetSubjects(app.DB))
+		api.GET("/faculties", handlers.GetFacultiesHandler(app))
 
 		api.GET("/priority",
 			middleware.RequireAuth(app.JWTSecret),
@@ -81,6 +82,6 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 	if gin.Mode() == gin.DebugMode {
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
-	
+
 	return r
 }

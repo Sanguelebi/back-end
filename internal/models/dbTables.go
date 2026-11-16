@@ -41,10 +41,10 @@ func (s Semester) Year() int {
 }
 
 type Faculty struct {
-	ID          uint    `gorm:"primaryKey;autoIncrement"`
-	Name        string  `gorm:"type:varchar(255);not null"`
-	Description string  `gorm:"type:varchar(255);not null"`
-	PhotoURL    *string `gorm:"type:text"`
+	ID          uint    `gorm:"primaryKey;autoIncrement" example:"1"`
+	Name        string  `gorm:"type:varchar(255);not null" example:"კომპიუტერული მეცნიერება და IT"`
+	Description string  `gorm:"type:varchar(255);not null" example:"კომპიუტერული მეცნიერების, პროგრამული ინჟინერიისა და ინფორმაციული ტექნოლოგიების ფაკულტეტი"`
+	PhotoURL    *string `gorm:"type:text" example:"http://url_to_photo"`
 }
 
 type StudentStatus int

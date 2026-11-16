@@ -30,6 +30,22 @@ definitions:
         example: active
         type: string
     type: object
+  models.Faculty:
+    properties:
+      description:
+        example: კომპიუტერული მეცნიერების, პროგრამული ინჟინერიისა და ინფორმაციული
+          ტექნოლოგიების ფაკულტეტი
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: კომპიუტერული მეცნიერება და IT
+        type: string
+      photoURL:
+        example: http://url_to_photo
+        type: string
+    type: object
   models.JsonAddUserResponse:
     properties:
       id:
@@ -43,6 +59,16 @@ definitions:
     properties:
       error:
         example: Invalid request format
+        type: string
+    type: object
+  models.JsonGetFacultiesResponse:
+    properties:
+      faculties:
+        items:
+          $ref: '#/definitions/models.Faculty'
+        type: array
+      message:
+        example: Faculties fetched succesfully!
         type: string
     type: object
   models.JsonGetPrioritiesResponse:
@@ -241,6 +267,25 @@ info:
   description: API endpoints for the course selection platform.
   title: Course Selection API
 paths:
+  /api/faculties:
+    get:
+      description: Retrieves a list of all available faculties.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JsonGetFacultiesResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      summary: Get all faculties
+      tags:
+      - faculties
   /api/login:
     post:
       consumes:
