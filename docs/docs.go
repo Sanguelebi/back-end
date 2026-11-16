@@ -15,6 +15,35 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/faculties": {
+            "get": {
+                "description": "Retrieves a list of all available faculties.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "faculties"
+                ],
+                "summary": "Get all faculties",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JsonGetFacultiesResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/login": {
             "post": {
                 "description": "Authenticate a user and return a JWT token in an HttpOnly cookie",
@@ -462,6 +491,27 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Faculty": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "კომპიუტერული მეცნიერების, პროგრამული ინჟინერიისა და ინფორმაციული ტექნოლოგიების ფაკულტეტი"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "კომპიუტერული მეცნიერება და IT"
+                },
+                "photoURL": {
+                    "type": "string",
+                    "example": "http://url_to_photo"
+                }
+            }
+        },
         "models.JsonAddUserResponse": {
             "type": "object",
             "properties": {
@@ -481,6 +531,21 @@ const docTemplate = `{
                 "error": {
                     "type": "string",
                     "example": "Invalid request format"
+                }
+            }
+        },
+        "models.JsonGetFacultiesResponse": {
+            "type": "object",
+            "properties": {
+                "faculties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Faculty"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Faculties fetched succesfully!"
                 }
             }
         },
