@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -74,7 +75,7 @@ func (s *StudentStatus) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	switch str {
+	switch strings.TrimSpace(strings.ToLower(str)) {
 	case "active":
 		*s = Active
 	case "inactive":
@@ -115,7 +116,7 @@ func (g *Gender) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	switch s {
+	switch strings.TrimSpace(strings.ToLower(s)) {
 	case "male":
 		*g = Male
 	case "female":
@@ -191,6 +192,27 @@ func (s SubjectType) String() string {
 	}
 }
 
+func (s SubjectType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.String())
+}
+
+func (s *SubjectType) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	switch strings.TrimSpace(strings.ToLower(str)) {
+	case "professional":
+		*s = SubjectProfessional
+	case "free":
+		*s = SubjectFree
+	default:
+		return fmt.Errorf("Invalid Subject Type provided: %q", str)
+	}
+	return nil
+}
+
 type ChoosableSubjects struct {
 	ID           uint        `gorm:"primaryKey;autoIncrement"`
 	FacultyID    uint        `gorm:"type:integer;not null"`
@@ -241,7 +263,7 @@ func (r *Role) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	switch s {
+	switch strings.TrimSpace(strings.ToLower(s)) {
 	case "student":
 		*r = RoleStudent
 	case "admin":
