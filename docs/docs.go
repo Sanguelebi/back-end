@@ -90,6 +90,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/logout": {
+            "post": {
+                "description": "Logout the user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout",
+                "responses": {
+                    "200": {
+                        "description": "Logged out.",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/priority": {
             "get": {
                 "security": [

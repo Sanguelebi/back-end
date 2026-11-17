@@ -377,6 +377,21 @@ paths:
       summary: Login
       tags:
       - auth
+  /api/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout the user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged out.
+          schema:
+            $ref: '#/definitions/models.JsonSuccesfulResponse'
+      summary: Logout
+      tags:
+      - auth
   /api/priority:
     get:
       description: Retrieves a list of priorities for the logged-in student

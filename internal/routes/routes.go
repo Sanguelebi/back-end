@@ -81,6 +81,7 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 		)
 
 		api.POST("/login", handlers.LoginHandler(app))
+		api.POST("/logout", handlers.LogoutHandler(app))
 	}
 
 	// Access to Swagger only when in Dev mode.
