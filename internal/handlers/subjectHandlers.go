@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetSubjects(db *gorm.DB) gin.HandlerFunc {
+func GetAllSubjectsHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		faculty := c.Query("faculty")
 		name := c.Query("name")
@@ -26,7 +26,7 @@ func GetSubjects(db *gorm.DB) gin.HandlerFunc {
 			pageSize = 10
 		}
 
-		subjects, hasMore, err := services.GetAllSubjects(db, faculty, name, page, pageSize)
+		subjects, hasMore, err := services.GetAllSubjectsService(db, faculty, name, page, pageSize)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -36,7 +36,7 @@ func GetSubjects(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func GetPriorities(db *gorm.DB) gin.HandlerFunc {
+func GetStudentPrioritiesHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		val, exists := c.Get("userID")
 		if !exists {
@@ -46,7 +46,7 @@ func GetPriorities(db *gorm.DB) gin.HandlerFunc {
 
 		studentID := val.(uint)
 
-		priorities, err := services.GetStudentPriorities(db, studentID)
+		priorities, err := services.GetStudentPrioritiesService(db, studentID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -56,7 +56,7 @@ func GetPriorities(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func AddPriority(db *gorm.DB) gin.HandlerFunc {
+func AddStudentPriorityHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		val, exists := c.Get("userID")
 		if !exists {
@@ -71,7 +71,7 @@ func AddPriority(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := services.AddPriority(db, studentID, req.SubjectGroupID); err != nil {
+		if err := services.AddStudentPriorityService(db, studentID, req.SubjectGroupID); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -80,12 +80,12 @@ func AddPriority(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func DeletePriority(db *gorm.DB) gin.HandlerFunc {
+func DeleteStudentPriorityHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		studentID := c.MustGet("userID").(uint)
 		id, _ := strconv.Atoi(c.Param("id"))
 
-		if err := services.DeletePriority(db, studentID, uint(id)); err != nil {
+		if err := services.DeleteStudentPriorityService(db, studentID, uint(id)); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
