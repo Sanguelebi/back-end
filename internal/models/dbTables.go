@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -41,10 +42,10 @@ func (s Semester) Year() int {
 }
 
 type Faculty struct {
-	ID          uint    `gorm:"primaryKey;autoIncrement"`
-	Name        string  `gorm:"type:varchar(255);not null"`
-	Description string  `gorm:"type:varchar(255);not null"`
-	PhotoURL    *string `gorm:"type:text"`
+	ID          uint    `gorm:"primaryKey;autoIncrement" example:"1"`
+	Name        string  `gorm:"type:varchar(255);not null" example:"კომპიუტერული მეცნიერება და IT"`
+	Description string  `gorm:"type:varchar(255);not null" example:"კომპიუტერული მეცნიერების, პროგრამული ინჟინერიისა და ინფორმაციული ტექნოლოგიების ფაკულტეტი"`
+	PhotoURL    *string `gorm:"type:text" example:"http://url_to_photo"`
 }
 
 type StudentStatus int
@@ -74,7 +75,7 @@ func (s *StudentStatus) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	switch str {
+	switch strings.TrimSpace(strings.ToLower(str)) {
 	case "active":
 		*s = Active
 	case "inactive":
@@ -115,7 +116,7 @@ func (g *Gender) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	switch s {
+	switch strings.TrimSpace(strings.ToLower(s)) {
 	case "male":
 		*g = Male
 	case "female":
@@ -142,6 +143,8 @@ type Users struct {
 	PhoneNumber   string         `gorm:"type:varchar(255);not null" json:"phone_number"`
 	PhotoUrl      string         `gorm:"type:text;not null" json:"photo_url"`
 	StudentStatus *StudentStatus `gorm:"type:smallint" json:"student_status" swaggertype:"string" example:"active"`
+    FacultyID     *uint          `gorm:"type:integer" json:"faculty_id" example:"1"`
+    Faculty       *Faculty       `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"-"`
 }
 
 type Subject struct {
@@ -191,6 +194,36 @@ func (s SubjectType) String() string {
 	}
 }
 
+func (s SubjectType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.String())
+}
+
+func ParseSubjectType(s string) (SubjectType, error) {
+	switch strings.TrimSpace(strings.ToLower(s)) {
+	case "professional":
+		return SubjectProfessional, nil
+	case "free":
+		return SubjectFree, nil
+	default:
+		return 0, fmt.Errorf("Invalid Subject Type provided: %q", s)
+	}
+}
+
+func (s *SubjectType) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	subjectType, err := ParseSubjectType(str)
+	if err != nil {
+		return err
+	}
+	*s = subjectType
+
+	return nil
+}
+
 type ChoosableSubjects struct {
 	ID           uint        `gorm:"primaryKey;autoIncrement"`
 	FacultyID    uint        `gorm:"type:integer;not null"`
@@ -199,7 +232,16 @@ type ChoosableSubjects struct {
 	Subject      Subject     `gorm:"foreignKey:SubjectID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	SubjectType  SubjectType `gorm:"type:smallint;not null"`
 	FromSemester Semester    `gorm:"type:smallint;not null;check:from_semester BETWEEN 1 AND 16;"`
-	ToSemester   Semester    `gorm:"type:smallint;not null;check:to_semester BETWEEN 1 AND 16;"`
+	ToSemester   Semester    `gorm:"type:smallint;not null;check:to_semester BETWEEN 1 AND 16;check:to_semester >= from_semester"`
+}
+
+type StudentSubjectAllowance struct {
+	ID                           uint     `gorm:"primaryKey;autoIncrement" json:"-"`
+	StudentId                    uint     `gorm:"type:integer;not null;uniqueIndex:idx_student_semester" json:"student_id" example:"2"`
+	Student                      Users    `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	ProfessionalSubjectAllowance int      `gorm:"type:integer;not null;" json:"professional_subject_allowance" example:"2"`
+	FreeSubjectAllowance         int      `gorm:"type:integer;not null;" json:"free_subject_allowance" example:"1"`
+	Semester                     Semester `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;uniqueIndex:idx_student_semester" json:"semester" example:"2"`
 }
 
 type Role int
@@ -232,7 +274,7 @@ func (r *Role) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	switch s {
+	switch strings.TrimSpace(strings.ToLower(s)) {
 	case "student":
 		*r = RoleStudent
 	case "admin":
@@ -277,6 +319,27 @@ func (s LectureType) String() string {
 	}
 }
 
+func (l *LectureType) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	switch strings.TrimSpace(strings.ToLower(str)) {
+	case "lecture":
+		*l = Lecture
+	case "seminar":
+		*l = Seminar
+	default:
+		return fmt.Errorf("Invalid Lecture Type provided: %q", str)
+	}
+	return nil
+}
+
+func (l LectureType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(l.String())
+}
+
 type SubjectGroup struct {
 	ID          uint        `gorm:"primaryKey;autoIncrement"`
 	GroupNo     int16       `gorm:"type:smallint;not null"`
@@ -286,18 +349,21 @@ type SubjectGroup struct {
 	From        string      `gorm:"type:varchar(5);not null"`
 	To          string      `gorm:"type:varchar(5);not null"`
 	MaxStudent  int8        `gorm:"type:smallint;not null"`
-	LectureType LectureType `gorm:"type:smallint;not null"`
+	LectureType LectureType `gorm:"type:smallint;not null" swaggertype:"string" example:"lecture"`
 	LecturerId  uint        `gorm:"type:integer;not null"`
 	Lecturer    Lecturer    `gorm:"foreignKey:LecturerId;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 }
 
 type StudentPriorityList struct {
-	ID             uint         `gorm:"primaryKey;autoIncrement" example:"1"`
-	Priority       int16        `gorm:"type:smallint;not null" example:"1"`
-	SubjectGroupId uint         `gorm:"type:integer;not null" example:"2"`
+	ID             uint         `gorm:"primaryKey;autoIncrement" json:"id" example:"1"`
+	Priority       int16        `gorm:"type:smallint;not null" json:"priority" example:"1"`
+	SlotID         uint         `gorm:"type:integer;not null" json:"slot_id" example:"1"`
+	SubjectGroupId uint         `gorm:"type:integer;not null" json:"subject_group_id" example:"2"`
 	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
-	StudentId      uint         `gorm:"type:integer;not null" example:"2"`
+	StudentId      uint         `gorm:"type:integer;not null" json:"student_id" example:"2"`
 	Student        Users        `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	Confirm 	   bool 		`gorm:"type:boolean;default:false" json:"confirm" example:"false"`
+	SubjectType    SubjectType 	`gorm:"type:smallint;not null" json:"subject_type" swaggertype:"string" example:"professional"`
 }
 
 type LecturerRating struct {

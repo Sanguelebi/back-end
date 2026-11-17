@@ -58,6 +58,7 @@ func SeedDatabase(db *gorm.DB) error {
 			&models.SubjectDifficulty{},
 			&models.ActiveRegistration{},
 			&models.InactiveRegistration{},
+			&models.StudentSubjectAllowance{},
 		); err != nil {
 			return err
 		}
@@ -92,6 +93,12 @@ func SeedDatabase(db *gorm.DB) error {
 		// ======== 2. Seed Users ========
 		activeStudentStatus := models.Active
 
+		// Extract Faculty IDs as pointers to assign to users safely
+		csFacultyID := &faculties[0].ID
+		businessFacultyID := &faculties[1].ID
+		lawFacultyID := &faculties[2].ID
+		socialFacultyID := &faculties[3].ID
+
 		userSeeds := []struct {
 			user          models.Users
 			plainPassword string
@@ -107,26 +114,28 @@ func SeedDatabase(db *gorm.DB) error {
 					PhoneNumber:   "+995555123456",
 					PhotoUrl:      "https://example.com/admin.jpg",
 					StudentStatus: nil,
+					FacultyID:     nil,
 				},
 				plainPassword: "AdminSecret123!",
 			},
 			{
 				user: models.Users{
-					Email:         "student@university.edu",
+					Email:         "g.beridze@university.edu",
 					Role:          models.RoleStudent,
 					FirstName:     "გიორგი",
 					LastName:      "ბერიძე",
 					Gender:        models.Male,
 					PersonalNo:    "01001001002",
 					PhoneNumber:   "+995555654321",
-					PhotoUrl:      "https://example.com/student.jpg",
+					PhotoUrl:      "https://example.com/student1.jpg",
 					StudentStatus: &activeStudentStatus,
+					FacultyID:     csFacultyID, // users[1] - CS
 				},
 				plainPassword: "StudentPass123!",
 			},
 			{
 				user: models.Users{
-					Email:         "nino.kapanadze@university.edu",
+					Email:         "n.kapanadze@university.edu",
 					Role:          models.RoleStudent,
 					FirstName:     "ნინო",
 					LastName:      "კაპანაძე",
@@ -135,8 +144,192 @@ func SeedDatabase(db *gorm.DB) error {
 					PhoneNumber:   "+995555987654",
 					PhotoUrl:      "https://example.com/student2.jpg",
 					StudentStatus: &activeStudentStatus,
+					FacultyID:     lawFacultyID, // users[2] - Law
 				},
 				plainPassword: "StudentPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "d.maisuradze@university.edu",
+					Role:          models.RoleStudent,
+					FirstName:     "დავით",
+					LastName:      "მაისურაძე",
+					Gender:        models.Male,
+					PersonalNo:    "01001001004",
+					PhoneNumber:   "+995555112233",
+					PhotoUrl:      "https://example.com/student3.jpg",
+					StudentStatus: &activeStudentStatus,
+					FacultyID:     businessFacultyID, // users[3] - Business
+				},
+				plainPassword: "StudentPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "m.gelashvili@university.edu",
+					Role:          models.RoleStudent,
+					FirstName:     "მარიამ",
+					LastName:      "გელაშვილი",
+					Gender:        models.Female,
+					PersonalNo:    "01001001005",
+					PhoneNumber:   "+995555334455",
+					PhotoUrl:      "https://example.com/student4.jpg",
+					StudentStatus: &activeStudentStatus,
+					FacultyID:     businessFacultyID, // users[4] - Business
+				},
+				plainPassword: "StudentPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "l.gogichaishvili@university.edu",
+					Role:          models.RoleStudent,
+					FirstName:     "ლუკა",
+					LastName:      "გოგიჩაიშვილი",
+					Gender:        models.Male,
+					PersonalNo:    "01001001006",
+					PhoneNumber:   "+995555667788",
+					PhotoUrl:      "https://example.com/student5.jpg",
+					StudentStatus: &activeStudentStatus,
+					FacultyID:     socialFacultyID, // users[5] - Social Sciences
+				},
+				plainPassword: "StudentPass123!",
+			},
+			// --- Managers for testing GetSubjectStudentOverviewService ---
+			{
+				user: models.Users{
+					Email:         "cs.manager@university.edu",
+					Role:          models.RoleManager,
+					FirstName:     "თამარ",
+					LastName:      "აბაშიძე",
+					Gender:        models.Female,
+					PersonalNo:    "01001001007",
+					PhoneNumber:   "+995555778899",
+					PhotoUrl:      "https://example.com/manager_cs.jpg",
+					StudentStatus: nil,
+					FacultyID:     csFacultyID, // users[6] - CS Manager
+				},
+				plainPassword: "ManagerPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "bus.manager@university.edu",
+					Role:          models.RoleManager,
+					FirstName:     "ირაკლი",
+					LastName:      "ჯავახიშვილი",
+					Gender:        models.Male,
+					PersonalNo:    "01001001008",
+					PhoneNumber:   "+995555889900",
+					PhotoUrl:      "https://example.com/manager_bus.jpg",
+					StudentStatus: nil,
+					FacultyID:     businessFacultyID, // users[7] - Business Manager
+				},
+				plainPassword: "ManagerPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "unassigned.manager@university.edu",
+					Role:          models.RoleManager,
+					FirstName:     "ნატო",
+					LastName:      "მელიქიშვილი",
+					Gender:        models.Female,
+					PersonalNo:    "01001001009",
+					PhoneNumber:   "+995555990011",
+					PhotoUrl:      "https://example.com/manager_none.jpg",
+					StudentStatus: nil,
+					FacultyID:     nil, // users[8] - Unassigned Manager (tests 400 error)
+				},
+				plainPassword: "ManagerPass123!",
+			},
+			// --- Additional CS Students to populate SubjectGroups ---
+			{
+				user: models.Users{
+					Email:         "a.tsiklauri@university.edu",
+					Role:          models.RoleStudent,
+					FirstName:     "ალექსანდრე",
+					LastName:      "წიკლაური",
+					Gender:        models.Male,
+					PersonalNo:    "01001001010",
+					PhoneNumber:   "+995555101010",
+					PhotoUrl:      "https://example.com/student6.jpg",
+					StudentStatus: &activeStudentStatus,
+					FacultyID:     csFacultyID, // users[9] - CS
+				},
+				plainPassword: "StudentPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "t.khutsishvili@university.edu",
+					Role:          models.RoleStudent,
+					FirstName:     "თეკლა",
+					LastName:      "ხუციშვილი",
+					Gender:        models.Female,
+					PersonalNo:    "01001001011",
+					PhoneNumber:   "+995555111111",
+					PhotoUrl:      "https://example.com/student7.jpg",
+					StudentStatus: &activeStudentStatus,
+					FacultyID:     csFacultyID, // users[10] - CS
+				},
+				plainPassword: "StudentPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "s.lomidze@university.edu",
+					Role:          models.RoleStudent,
+					FirstName:     "საბა",
+					LastName:      "ლომიძე",
+					Gender:        models.Male,
+					PersonalNo:    "01001001012",
+					PhoneNumber:   "+995555121212",
+					PhotoUrl:      "https://example.com/student8.jpg",
+					StudentStatus: &activeStudentStatus,
+					FacultyID:     csFacultyID, // users[11] - CS
+				},
+				plainPassword: "StudentPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "e.kvaratskhelia@university.edu",
+					Role:          models.RoleStudent,
+					FirstName:     "ელენე",
+					LastName:      "კვარაცხელია",
+					Gender:        models.Female,
+					PersonalNo:    "01001001013",
+					PhoneNumber:   "+995555131313",
+					PhotoUrl:      "https://example.com/student9.jpg",
+					StudentStatus: &activeStudentStatus,
+					FacultyID:     csFacultyID, // users[12] - CS
+				},
+				plainPassword: "StudentPass123!",
+			},
+			// --- Coordinators for testing CoordinatorConfirmSubjectService ---
+			{
+				user: models.Users{
+					Email:         "cs.coordinator@university.edu",
+					Role:          models.RoleCordinator,
+					FirstName:     "ანა",
+					LastName:      "ბაქრაძე",
+					Gender:        models.Female,
+					PersonalNo:    "01001001014",
+					PhoneNumber:   "+995555141414",
+					PhotoUrl:      "https://example.com/coordinator_cs.jpg",
+					StudentStatus: nil,
+					FacultyID:     csFacultyID, // Computer Science Coordinator
+				},
+				plainPassword: "CoordinatorPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "bus.coordinator@university.edu",
+					Role:          models.RoleCordinator,
+					FirstName:     "ნიკოლოზ",
+					LastName:      "ჩიქოვანი",
+					Gender:        models.Male,
+					PersonalNo:    "01001001015",
+					PhoneNumber:   "+995555151515",
+					PhotoUrl:      "https://example.com/coordinator_bus.jpg",
+					StudentStatus: nil,
+					FacultyID:     businessFacultyID, // Business Coordinator
+				},
+				plainPassword: "CoordinatorPass123!",
 			},
 		}
 
@@ -270,22 +463,31 @@ func SeedDatabase(db *gorm.DB) error {
 
 		// ======== 4. Seed Subject Prerequisites ========
 		prerequisites := []models.SubjectPrerequisite{
-			// CS & IT chains
+			// --- Complex Test Setup for Subject 5 (Backend Go) ---
+			// Bucket 1: Requires BOTH Databases (Subject 3) AND Frontend (Subject 4)
+			{SubjectId: subjects[5].ID, SubjectPrerequisiteId: subjects[3].ID, BucketId: 1},
+			{SubjectId: subjects[5].ID, SubjectPrerequisiteId: subjects[4].ID, BucketId: 1},
+			// Bucket 2: Requires ONLY OOP (Subject 1)
+			{SubjectId: subjects[5].ID, SubjectPrerequisiteId: subjects[1].ID, BucketId: 2},
+
+			// --- Keep other basic chains for broader testing ---
 			{SubjectId: subjects[1].ID, SubjectPrerequisiteId: subjects[0].ID, BucketId: 1},   // OOP -> Intro to Prog
 			{SubjectId: subjects[2].ID, SubjectPrerequisiteId: subjects[1].ID, BucketId: 1},   // Data Structures -> OOP
-			{SubjectId: subjects[5].ID, SubjectPrerequisiteId: subjects[3].ID, BucketId: 1},   // Backend -> Databases
 			{SubjectId: subjects[11].ID, SubjectPrerequisiteId: subjects[10].ID, BucketId: 1}, // ML -> AI
 			{SubjectId: subjects[18].ID, SubjectPrerequisiteId: subjects[6].ID, BucketId: 1},  // Distributed Systems -> Networks
+
 			// Business chains
 			{SubjectId: subjects[21].ID, SubjectPrerequisiteId: subjects[20].ID, BucketId: 1}, // Macro -> Micro
 			{SubjectId: subjects[23].ID, SubjectPrerequisiteId: subjects[22].ID, BucketId: 1}, // Managerial Acc -> Financial Acc
 			{SubjectId: subjects[26].ID, SubjectPrerequisiteId: subjects[22].ID, BucketId: 1}, // Corp Finance -> Financial Acc
 			{SubjectId: subjects[30].ID, SubjectPrerequisiteId: subjects[24].ID, BucketId: 1}, // Strategic Mgmt -> Intro Mgmt
+
 			// Law chains
 			{SubjectId: subjects[43].ID, SubjectPrerequisiteId: subjects[42].ID, BucketId: 1}, // Property Law -> Civil General
 			{SubjectId: subjects[44].ID, SubjectPrerequisiteId: subjects[42].ID, BucketId: 1}, // Obligations -> Civil General
 			{SubjectId: subjects[45].ID, SubjectPrerequisiteId: subjects[44].ID, BucketId: 1}, // Contract Law -> Obligations
 			{SubjectId: subjects[47].ID, SubjectPrerequisiteId: subjects[46].ID, BucketId: 1}, // Criminal Special -> Criminal General
+
 			// Social Sciences chains
 			{SubjectId: subjects[64].ID, SubjectPrerequisiteId: subjects[63].ID, BucketId: 1}, // Social Psych -> General Psych
 			{SubjectId: subjects[66].ID, SubjectPrerequisiteId: subjects[60].ID, BucketId: 1}, // Comparative Politics -> Intro PolSci
@@ -301,16 +503,21 @@ func SeedDatabase(db *gorm.DB) error {
 
 		// ======== 5. Seed Choosable Subjects (All 80 Subjects) ========
 		for i, subj := range subjects {
-			// Make every 5th subject in each faculty a Free elective, others Professional
 			subjType := models.SubjectProfessional
 			if (i+1)%5 == 0 {
 				subjType = models.SubjectFree
 			}
 
-			// Spread semester availability realistically (1-4 for early courses, 3-8 for advanced)
 			idxInFaculty := i % 20
-			fromSem := models.Semester(1 + (idxInFaculty / 5))
-			toSem := models.Semester(8)
+			band := idxInFaculty / 5
+
+			fromSem := models.Semester(band*2 + 1)
+			toSem := fromSem + 2
+
+			if band == 3 {
+				fromSem = 6
+				toSem = 8
+			}
 
 			cs := models.ChoosableSubjects{
 				FacultyID:    subj.FacultyID,
@@ -329,16 +536,12 @@ func SeedDatabase(db *gorm.DB) error {
 
 		// ======== 6. Seed Lecturers (8 Lecturers - 2 per Faculty) ========
 		lecturers := []models.Lecturer{
-			// CS & IT
 			{FirstName: "ლევან", LastName: "ქავთარაძე", Description: "პროგრამული უზრუნველყოფის ინჟინერიის პროფესორი"},
 			{FirstName: "ნინო", LastName: "დოლიძე", Description: "მონაცემთა ბაზებისა და ხელოვნური ინტელექტის ლექტორი"},
-			// Business
 			{FirstName: "გიორგი", LastName: "მაისურაძე", Description: "ბიზნესის ადმინისტრირებისა და ეკონომიკის დოქტორი"},
 			{FirstName: "თამარ", LastName: "ჩხეიძე", Description: "კორპორაციული ფინანსებისა და მარკეტინგის პროფესორი"},
-			// Law
 			{FirstName: "დავით", LastName: "კვარაცხელია", Description: "სამოქალაქო და საკორპორაციო სამართლის ასოცირებული პროფესორი"},
 			{FirstName: "მარიამ", LastName: "გელაშვილი", Description: "კონსტიტუციური და საერთაშორისო სამართლის დოქტორი"},
-			// Social & Political Sciences
 			{FirstName: "ალექსანდრე", LastName: "წერეთელი", Description: "საერთაშორისო ურთიერთობებისა და პოლიტიკის მეცნიერების პროფესორი"},
 			{FirstName: "ეკატერინე", LastName: "ლომიძე", Description: "სოციალური ფსიქოლოგიისა და კვლევის მეთოდების ლექტორი"},
 		}
@@ -352,6 +555,9 @@ func SeedDatabase(db *gorm.DB) error {
 		}
 
 		// ======== 7. Seed Subject Groups (Lecture + Seminar for every Subject) ========
+		// Note: Subject index `i` maps to:
+		//   subjectGroups[i*2]     -> GroupNo 1 (Lecture)
+		//   subjectGroups[i*2 + 1] -> GroupNo 2 (Seminar)
 		var subjectGroups []models.SubjectGroup
 		timeSlots := []struct {
 			from string
@@ -409,16 +615,30 @@ func SeedDatabase(db *gorm.DB) error {
 
 		// ======== 8. Seed Initial Student Priority List ========
 		priorities := []models.StudentPriorityList{
-			{Priority: 1, SubjectGroupId: subjectGroups[0].ID, StudentId: users[1].ID},
-			{Priority: 2, SubjectGroupId: subjectGroups[2].ID, StudentId: users[1].ID},
-			{Priority: 3, SubjectGroupId: subjectGroups[4].ID, StudentId: users[1].ID},
-			{Priority: 1, SubjectGroupId: subjectGroups[40].ID, StudentId: users[2].ID},
-			{Priority: 2, SubjectGroupId: subjectGroups[42].ID, StudentId: users[2].ID},
+			// Student: g.beridze (users[1] - CS)
+			// Slot 1: Free Subjects
+			{Priority: 1, SubjectGroupId: subjectGroups[0].ID, SlotID: 1, SubjectType: models.SubjectFree, StudentId: users[1].ID}, 
+			{Priority: 2, SubjectGroupId: subjectGroups[2].ID, SlotID: 1, SubjectType: models.SubjectFree, StudentId: users[1].ID}, 
+			// Slot 2: Professional Subjects
+			{Priority: 1, SubjectGroupId: subjectGroups[4].ID, SlotID: 2, SubjectType: models.SubjectProfessional, StudentId: users[1].ID}, 
+
+			// Student: n.kapanadze (users[2] - Law)
+			// Slot 1: Professional Subjects
+			{Priority: 1, SubjectGroupId: subjectGroups[80].ID, SlotID: 1, SubjectType: models.SubjectProfessional, StudentId: users[2].ID}, 
+			{Priority: 2, SubjectGroupId: subjectGroups[82].ID, SlotID: 1, SubjectType: models.SubjectProfessional, StudentId: users[2].ID}, 
+
+			// Student: d.maisuradze (users[3] - Business)
+			{Priority: 1, SubjectGroupId: subjectGroups[40].ID, SlotID: 1, SubjectType: models.SubjectFree, StudentId: users[3].ID}, 
+			
+			// Student: m.gelashvili (users[4] - Business)
+			{Priority: 1, SubjectGroupId: subjectGroups[60].ID, SlotID: 1, SubjectType: models.SubjectProfessional, StudentId: users[4].ID}, 
 		}
 		for i := range priorities {
 			if err := tx.FirstOrCreate(&priorities[i], models.StudentPriorityList{
 				StudentId:      priorities[i].StudentId,
 				SubjectGroupId: priorities[i].SubjectGroupId,
+				SlotID:         priorities[i].SlotID, 
+				// SubjectType is inserted automatically via priorities[i]
 			}).Error; err != nil {
 				return err
 			}
@@ -426,27 +646,33 @@ func SeedDatabase(db *gorm.DB) error {
 
 		// ======== 9. Seed Enrollments ========
 		enrollments := []models.EnrollmentTable{
-			{
-				Status:         models.StatusActive,
-				SubjectGroupID: subjectGroups[0].ID,
-				Year:           2026,
-				Semester:       1,
-				StudentID:      users[1].ID,
-			},
-			{
-				Status:         models.StatusActive,
-				SubjectGroupID: subjectGroups[2].ID,
-				Year:           2026,
-				Semester:       1,
-				StudentID:      users[1].ID,
-			},
-			{
-				Status:         models.StatusActive,
-				SubjectGroupID: subjectGroups[40].ID,
-				Year:           2026,
-				Semester:       1,
-				StudentID:      users[2].ID,
-			},
+			// --- Historical Passed/Failed records (Should NOT count toward active group capacity) ---
+			{Status: models.StatusPassed, SubjectGroupID: subjectGroups[0].ID, Year: 2025, Semester: 1, StudentID: users[1].ID},  // g.beridze passed Subj 0
+			{Status: models.StatusPassed, SubjectGroupID: subjectGroups[2].ID, Year: 2025, Semester: 1, StudentID: users[1].ID},  // g.beridze passed Subj 1 (Triggers Bucket 2 for Subj 5)
+			{Status: models.StatusPassed, SubjectGroupID: subjectGroups[40].ID, Year: 2025, Semester: 2, StudentID: users[3].ID}, // d.maisuradze passed Bus Subj 20
+			{Status: models.StatusFailed, SubjectGroupID: subjectGroups[6].ID, Year: 2025, Semester: 1, StudentID: users[12].ID}, // e.kvaratskhelia failed CS Subj 3 Group 1
+
+			// --- Active CS Enrollments (Tested by cs.manager@university.edu) ---
+			// CS Subject 0 (Python): Group 1 gets 3 active students, Group 2 gets 1 active student
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[0].ID, Year: 2026, Semester: 1, StudentID: users[9].ID},
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[0].ID, Year: 2026, Semester: 1, StudentID: users[10].ID},
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[0].ID, Year: 2026, Semester: 1, StudentID: users[11].ID},
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[1].ID, Year: 2026, Semester: 1, StudentID: users[12].ID},
+
+			// CS Subject 1 (Java OOP): Group 1 gets 2 active students, Group 2 has 0 active students
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[2].ID, Year: 2026, Semester: 2, StudentID: users[9].ID},
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[2].ID, Year: 2026, Semester: 2, StudentID: users[10].ID},
+
+			// CS Subject 3 (SQL Databases): Group 1 gets 1 active student (plus 1 failed above -> should return count 1)
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[6].ID, Year: 2026, Semester: 2, StudentID: users[11].ID},
+
+			// --- Active Business Enrollments (Tested by bus.manager@university.edu) ---
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[40].ID, Year: 2026, Semester: 1, StudentID: users[3].ID}, // Bus Subj 20 Group 1 (passed in 2025, retaking/active or new group)
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[41].ID, Year: 2026, Semester: 1, StudentID: users[4].ID}, // Bus Subj 20 Group 2
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[42].ID, Year: 2026, Semester: 2, StudentID: users[4].ID}, // Bus Subj 21 Group 1
+
+			// --- Active Law Enrollment ---
+			{Status: models.StatusActive, SubjectGroupID: subjectGroups[80].ID, Year: 2026, Semester: 1, StudentID: users[2].ID}, // Law Subj 40 Group 1
 		}
 		for i := range enrollments {
 			if err := tx.FirstOrCreate(&enrollments[i], models.EnrollmentTable{
@@ -461,7 +687,7 @@ func SeedDatabase(db *gorm.DB) error {
 		for i, lec := range lecturers {
 			rating := models.LecturerRating{
 				LecturerId: lec.ID,
-				Rating:     int16(4 + (i % 2)), // Alternates between 4 and 5
+				Rating:     int16(4 + (i % 2)),
 			}
 			if err := tx.FirstOrCreate(&rating, models.LecturerRating{
 				LecturerId: rating.LecturerId,
@@ -474,9 +700,8 @@ func SeedDatabase(db *gorm.DB) error {
 		recommendations := []models.SubjectRecommendation{
 			{SubjectId: subjects[0].ID, UserId: users[1].ID, VoteType: models.Like},
 			{SubjectId: subjects[1].ID, UserId: users[1].ID, VoteType: models.Like},
-			{SubjectId: subjects[5].ID, UserId: users[1].ID, VoteType: models.Like},
-			{SubjectId: subjects[20].ID, UserId: users[2].ID, VoteType: models.Like},
-			{SubjectId: subjects[26].ID, UserId: users[2].ID, VoteType: models.Like},
+			{SubjectId: subjects[20].ID, UserId: users[3].ID, VoteType: models.Like},
+			{SubjectId: subjects[40].ID, UserId: users[2].ID, VoteType: models.Like},
 		}
 		for i := range recommendations {
 			if err := tx.FirstOrCreate(&recommendations[i], models.SubjectRecommendation{
@@ -491,7 +716,7 @@ func SeedDatabase(db *gorm.DB) error {
 		for i, subj := range subjects {
 			diff := models.SubjectDifficulty{
 				SubjectId:       subj.ID,
-				DifficultyScale: int16(2 + (i % 4)), // Values between 2 and 5
+				DifficultyScale: int16(2 + (i % 4)),
 			}
 			if err := tx.FirstOrCreate(&diff, models.SubjectDifficulty{
 				SubjectId: diff.SubjectId,
@@ -517,7 +742,33 @@ func SeedDatabase(db *gorm.DB) error {
 			return err
 		}
 
-		log.Println("[INFO] Database seeded successfully with 4 faculties and 80 subjects!")
+		// ======== 14. Seed Student Subject Allowances ========
+		for _, user := range users {
+			if user.Role != models.RoleStudent {
+				continue
+			}
+
+			for sem := models.Semester(1); sem <= 8; sem++ {
+				profAllowance := int(1 + (sem % 2))
+				freeAllowance := int(2 - (sem % 2))
+
+				allowance := models.StudentSubjectAllowance{
+					StudentId:                    user.ID,
+					ProfessionalSubjectAllowance: profAllowance,
+					FreeSubjectAllowance:         freeAllowance,
+					Semester:                     sem,
+				}
+
+				if err := tx.FirstOrCreate(&allowance, models.StudentSubjectAllowance{
+					StudentId: allowance.StudentId,
+					Semester:  allowance.Semester,
+				}).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		log.Println("[INFO] Database seeded successfully with 4 faculties, 80 subjects, 3 managers, 9 students, and active/historical enrollment scenarios!")
 		return nil
 	})
 }

@@ -19,3 +19,12 @@ func _doc_Ping() {}
 // @Failure 401 {object} models.JsonErrorResponse "Error returned will be: 'Invalid email or password'"
 // @Router /api/login [post]
 func _doc_Login() {}
+
+// @Summary Logout
+// @Description Logout the user
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} models.JsonSuccesfulResponse "Logged out."
+// @Router /api/logout [post]
+func _doc_Logout() {}

@@ -25,12 +25,24 @@ type JsonLoginResponse struct {
 	User    LoginUserResponse `json:"user"`
 }
 
+// ==== CHOOSABLE SUBJECTS ====
+type JsonChoosableSubjectResponse struct {
+	Message string 						`json:"message" example:"Choosable Subjects Fetched Succesfully!"`
+	Subjects []ChoosableSubjectResponse `json:"subjects"`
+}
+
 // ==== SUBJECTS =====
 
 type JsonGetSubjectsResponse struct {
 	Message  string    `json:"message" example:"Subjects fetched succesfully!"`
-	HasMore bool `json:"has_more" example:"true"`
+	HasMore  bool      `json:"has_more" example:"true"`
 	Subjects []Subject `json:"subjects"`
+}
+
+// ==== FACULTIES ====
+type JsonGetFacultiesResponse struct {
+	Message   string    `json:"message" example:"Faculties fetched succesfully!"`
+	Faculties []Faculty `json:"faculties"`
 }
 
 // ==== PRIORITIES ====
@@ -40,3 +52,14 @@ type JsonGetPrioritiesResponse struct {
 	Priorities []StudentPriorityList `json:"priorities"`
 }
 
+// ===== MANAGER =====
+type JsonGetSubjectStudentOverviewResponse struct {
+	Message    string                `json:"message" example:"Overview list fetched succesfully!"`
+	Overview SubjectStudentOverviewResponse `json:"overview"`
+}
+
+// ====== COORDINATOR ======
+type JsonGetCoordinatorPrioritiesResponse struct {
+	Message string                `json:"message" example:"Student priorities fetched succesfully!"`
+	Data    []StudentPriorityList `json:"data"`
+}

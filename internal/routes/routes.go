@@ -59,28 +59,51 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 			handlers.DeleteUserHandler(app),
 		)
 
-		api.GET("/subjects", handlers.GetSubjects(app.DB))
+		api.GET("/subjects", handlers.GetAllSubjectsHandler(app.DB))
+		api.GET("/faculties", handlers.GetFacultiesHandler(app))
 
+		api.GET("/student/choosable-subjects", 
+			middleware.RequireAuth(app.JWTSecret), 
+			handlers.GetStudentChoosableSubjectsHandler(app),
+		)		
 		api.GET("/priority",
 			middleware.RequireAuth(app.JWTSecret),
-			handlers.GetPriorities(app.DB),
+			handlers.GetStudentPrioritiesHandler(app.DB),
 		)
 		api.POST("/priority",
 			middleware.RequireAuth(app.JWTSecret),
-			handlers.AddPriority(app.DB),
+			handlers.AddStudentPriorityHandler(app.DB),
 		)
 		api.DELETE("/priority/:id",
 			middleware.RequireAuth(app.JWTSecret),
-			handlers.DeletePriority(app.DB),
+			handlers.DeleteStudentPriorityHandler(app.DB),
+		)
+
+		api.GET("/manager/subject-student-overview", 
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.ManagerOnly(),
+			handlers.GetSubjectStudentOverviewHandler(app),
+		)
+
+		api.GET("/coordinator/student-priorities",
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.CoordinatorOnly(),
+			handlers.GetCoordinatorStudentPrioritiesHandler(app),
+		)
+		api.POST("/coordinator/confirm-subject", 
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.CoordinatorOnly(),
+			handlers.CoordinatorConfirmSubjectHandler(app),
 		)
 
 		api.POST("/login", handlers.LoginHandler(app))
+		api.POST("/logout", handlers.LogoutHandler(app))
 	}
 
 	// Access to Swagger only when in Dev mode.
 	if gin.Mode() == gin.DebugMode {
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
-	
+
 	return r
 }

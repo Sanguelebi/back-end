@@ -15,6 +15,148 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/coordinator/confirm-subject": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Toggles the confirmation status of a specific student priority. If confirming, it automatically removes any other confirmed priority in the same slot. Checks group capacity before confirming.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "coordinator"
+                ],
+                "summary": "Confirm or unconfirm a student's subject priority",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The ID of the Student Priority List record to confirm/unconfirm",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message returned will be 'Coordinator changed confirm succesfully!'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Error returned will be 'No priority ID Specified.' or parsing error.",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error returned will be 'Unauthorized from access.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Error returned will be 'priority record with id X not found'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Error returned will be 'subject group X is full (Y/Z)'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error returned will be related to database transactions, fetching, or locks.",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/coordinator/student-priorities": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a sorted list of all student priorities belonging to the coordinator's assigned faculty. Data is naturally grouped by student ID, slot ID, and priority.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "coordinator"
+                ],
+                "summary": "Get coordinator student priorities",
+                "responses": {
+                    "200": {
+                        "description": "Returns a message and a 'data' array containing models.StudentPriorityList",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonGetCoordinatorPrioritiesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Error returned will be 'coordinator is not assigned to any faculty'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error returned will be 'Unauthorized from access.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Error returned will be 'coordinator with id X not found'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error returned will be 'failed to fetch student priorities' or other server errors.",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/faculties": {
+            "get": {
+                "description": "Retrieves a list of all available faculties.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "faculties"
+                ],
+                "summary": "Get all faculties",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JsonGetFacultiesResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/login": {
             "post": {
                 "description": "Authenticate a user and return a JWT token in an HttpOnly cookie",
@@ -61,6 +203,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/logout": {
+            "post": {
+                "description": "Logout the user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout",
+                "responses": {
+                    "200": {
+                        "description": "Logged out.",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/manager/subject-student-overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of subjects, their groups and how many students are in them.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "manager"
+                ],
+                "summary": "Get student subject overview list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JsonGetSubjectStudentOverviewResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error returned will be 'Manager has no faculty attached.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Error returned will be: 'Unauthorized from access.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error returned will be 'Failed to fetch.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/priority": {
             "get": {
                 "security": [
@@ -73,7 +284,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "priority"
+                    "student"
                 ],
                 "summary": "Get priorities",
                 "responses": {
@@ -86,7 +297,7 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "401": {
+                    "403": {
                         "description": "Error returned will be: 'Unauthorized from access.'",
                         "schema": {
                             "$ref": "#/definitions/models.JsonErrorResponse"
@@ -114,7 +325,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "priority"
+                    "student"
                 ],
                 "summary": "Add priority",
                 "parameters": [
@@ -141,7 +352,7 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.JsonErrorResponse"
                         }
                     },
-                    "401": {
+                    "403": {
                         "description": "Error returned will be: 'Unauthorized.'",
                         "schema": {
                             "$ref": "#/definitions/models.JsonErrorResponse"
@@ -162,7 +373,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "priority"
+                    "student"
                 ],
                 "summary": "Delete priority",
                 "parameters": [
@@ -183,6 +394,59 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Service error",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/student/choosable-subject": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of subjects that a student can choose",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "student"
+                ],
+                "summary": "Get choosable subjects for a student",
+                "parameters": [
+                    {
+                        "enum": [
+                            "professional",
+                            "free"
+                        ],
+                        "type": "string",
+                        "description": "Filter by subject type",
+                        "name": "subjectType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JsonChoosableSubjectResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error returned will be 'Specify subject type.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Error returned will be: 'Unauthorized from access.'",
                         "schema": {
                             "$ref": "#/definitions/models.JsonErrorResponse"
                         }
@@ -421,6 +685,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.ChoosableSubjectResponse": {
+            "type": "object",
+            "properties": {
+                "subjectData": {
+                    "$ref": "#/definitions/models.Subject"
+                },
+                "subjectGroups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubjectGroup"
+                    }
+                }
+            }
+        },
         "models.EditUserRequest": {
             "type": "object",
             "properties": {
@@ -462,6 +740,27 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Faculty": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "კომპიუტერული მეცნიერების, პროგრამული ინჟინერიისა და ინფორმაციული ტექნოლოგიების ფაკულტეტი"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "კომპიუტერული მეცნიერება და IT"
+                },
+                "photoURL": {
+                    "type": "string",
+                    "example": "http://url_to_photo"
+                }
+            }
+        },
         "models.JsonAddUserResponse": {
             "type": "object",
             "properties": {
@@ -475,12 +774,57 @@ const docTemplate = `{
                 }
             }
         },
+        "models.JsonChoosableSubjectResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Choosable Subjects Fetched Succesfully!"
+                },
+                "subjects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ChoosableSubjectResponse"
+                    }
+                }
+            }
+        },
         "models.JsonErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
                     "type": "string",
                     "example": "Invalid request format"
+                }
+            }
+        },
+        "models.JsonGetCoordinatorPrioritiesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.StudentPriorityList"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Student priorities fetched succesfully!"
+                }
+            }
+        },
+        "models.JsonGetFacultiesResponse": {
+            "type": "object",
+            "properties": {
+                "faculties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Faculty"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Faculties fetched succesfully!"
                 }
             }
         },
@@ -496,6 +840,18 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.StudentPriorityList"
                     }
+                }
+            }
+        },
+        "models.JsonGetSubjectStudentOverviewResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Overview list fetched succesfully!"
+                },
+                "overview": {
+                    "$ref": "#/definitions/models.SubjectStudentOverviewResponse"
                 }
             }
         },
@@ -554,6 +910,26 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Lecturer": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "photoUrl": {
+                    "type": "string"
+                }
+            }
+        },
         "models.LoginUserRequest": {
             "type": "object",
             "required": [
@@ -608,9 +984,17 @@ const docTemplate = `{
         "models.PriorityRequest": {
             "type": "object",
             "properties": {
+                "slot_id": {
+                    "type": "integer",
+                    "example": 1
+                },
                 "subject_group_id": {
                     "type": "integer",
                     "example": 2
+                },
+                "subject_type": {
+                    "type": "string",
+                    "example": "free"
                 }
             }
         },
@@ -669,6 +1053,10 @@ const docTemplate = `{
         "models.StudentPriorityList": {
             "type": "object",
             "properties": {
+                "confirm": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "id": {
                     "type": "integer",
                     "example": 1
@@ -677,13 +1065,21 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
-                "studentId": {
+                "slot_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "student_id": {
                     "type": "integer",
                     "example": 2
                 },
-                "subjectGroupId": {
+                "subject_group_id": {
                     "type": "integer",
                     "example": 2
+                },
+                "subject_type": {
+                    "type": "string",
+                    "example": "professional"
                 }
             }
         },
@@ -715,11 +1111,91 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SubjectGroup": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "integer"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "groupNo": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lectureType": {
+                    "type": "string",
+                    "example": "lecture"
+                },
+                "lecturer": {
+                    "$ref": "#/definitions/models.Lecturer"
+                },
+                "lecturerId": {
+                    "type": "integer"
+                },
+                "maxStudent": {
+                    "type": "integer"
+                },
+                "subject": {
+                    "$ref": "#/definitions/models.Subject"
+                },
+                "subjectId": {
+                    "type": "integer"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SubjectGroupOverview": {
+            "type": "object",
+            "properties": {
+                "amount_of_students": {
+                    "type": "integer"
+                },
+                "group_id": {
+                    "type": "integer"
+                },
+                "group_no": {
+                    "type": "integer"
+                },
+                "max_amount": {
+                    "type": "integer"
+                },
+                "student_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.SubjectStudentOverviewResponse": {
+            "type": "object",
+            "properties": {
+                "subject": {
+                    "$ref": "#/definitions/models.Subject"
+                },
+                "subject_groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubjectGroupOverview"
+                    }
+                }
+            }
+        },
         "models.Users": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
+                },
+                "faculty_id": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "first_name": {
                     "type": "string"

@@ -1,5 +1,14 @@
 basePath: /api
 definitions:
+  models.ChoosableSubjectResponse:
+    properties:
+      subjectData:
+        $ref: '#/definitions/models.Subject'
+      subjectGroups:
+        items:
+          $ref: '#/definitions/models.SubjectGroup'
+        type: array
+    type: object
   models.EditUserRequest:
     properties:
       email:
@@ -30,6 +39,22 @@ definitions:
         example: active
         type: string
     type: object
+  models.Faculty:
+    properties:
+      description:
+        example: კომპიუტერული მეცნიერების, პროგრამული ინჟინერიისა და ინფორმაციული
+          ტექნოლოგიების ფაკულტეტი
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: კომპიუტერული მეცნიერება და IT
+        type: string
+      photoURL:
+        example: http://url_to_photo
+        type: string
+    type: object
   models.JsonAddUserResponse:
     properties:
       id:
@@ -39,10 +64,40 @@ definitions:
         example: User added succesfully!
         type: string
     type: object
+  models.JsonChoosableSubjectResponse:
+    properties:
+      message:
+        example: Choosable Subjects Fetched Succesfully!
+        type: string
+      subjects:
+        items:
+          $ref: '#/definitions/models.ChoosableSubjectResponse'
+        type: array
+    type: object
   models.JsonErrorResponse:
     properties:
       error:
         example: Invalid request format
+        type: string
+    type: object
+  models.JsonGetCoordinatorPrioritiesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.StudentPriorityList'
+        type: array
+      message:
+        example: Student priorities fetched succesfully!
+        type: string
+    type: object
+  models.JsonGetFacultiesResponse:
+    properties:
+      faculties:
+        items:
+          $ref: '#/definitions/models.Faculty'
+        type: array
+      message:
+        example: Faculties fetched succesfully!
         type: string
     type: object
   models.JsonGetPrioritiesResponse:
@@ -54,6 +109,14 @@ definitions:
         items:
           $ref: '#/definitions/models.StudentPriorityList'
         type: array
+    type: object
+  models.JsonGetSubjectStudentOverviewResponse:
+    properties:
+      message:
+        example: Overview list fetched succesfully!
+        type: string
+      overview:
+        $ref: '#/definitions/models.SubjectStudentOverviewResponse'
     type: object
   models.JsonGetSubjectsResponse:
     properties:
@@ -90,6 +153,19 @@ definitions:
     properties:
       message:
         example: The action has been executed succesfully!
+        type: string
+    type: object
+  models.Lecturer:
+    properties:
+      description:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+      photoUrl:
         type: string
     type: object
   models.LoginUserRequest:
@@ -131,9 +207,15 @@ definitions:
     type: object
   models.PriorityRequest:
     properties:
+      slot_id:
+        example: 1
+        type: integer
       subject_group_id:
         example: 2
         type: integer
+      subject_type:
+        example: free
+        type: string
     type: object
   models.RegisterUserRequest:
     properties:
@@ -176,18 +258,27 @@ definitions:
     type: object
   models.StudentPriorityList:
     properties:
+      confirm:
+        example: false
+        type: boolean
       id:
         example: 1
         type: integer
       priority:
         example: 1
         type: integer
-      studentId:
+      slot_id:
+        example: 1
+        type: integer
+      student_id:
         example: 2
         type: integer
-      subjectGroupId:
+      subject_group_id:
         example: 2
         type: integer
+      subject_type:
+        example: professional
+        type: string
     type: object
   models.Subject:
     properties:
@@ -209,10 +300,63 @@ definitions:
         example: http://link_to_syllabus_pdf
         type: string
     type: object
+  models.SubjectGroup:
+    properties:
+      day:
+        type: integer
+      from:
+        type: string
+      groupNo:
+        type: integer
+      id:
+        type: integer
+      lectureType:
+        example: lecture
+        type: string
+      lecturer:
+        $ref: '#/definitions/models.Lecturer'
+      lecturerId:
+        type: integer
+      maxStudent:
+        type: integer
+      subject:
+        $ref: '#/definitions/models.Subject'
+      subjectId:
+        type: integer
+      to:
+        type: string
+    type: object
+  models.SubjectGroupOverview:
+    properties:
+      amount_of_students:
+        type: integer
+      group_id:
+        type: integer
+      group_no:
+        type: integer
+      max_amount:
+        type: integer
+      student_ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  models.SubjectStudentOverviewResponse:
+    properties:
+      subject:
+        $ref: '#/definitions/models.Subject'
+      subject_groups:
+        items:
+          $ref: '#/definitions/models.SubjectGroupOverview'
+        type: array
+    type: object
   models.Users:
     properties:
       email:
         type: string
+      faculty_id:
+        example: 1
+        type: integer
       first_name:
         type: string
       gender:
@@ -241,6 +385,105 @@ info:
   description: API endpoints for the course selection platform.
   title: Course Selection API
 paths:
+  /api/coordinator/confirm-subject:
+    post:
+      description: Toggles the confirmation status of a specific student priority.
+        If confirming, it automatically removes any other confirmed priority in the
+        same slot. Checks group capacity before confirming.
+      parameters:
+      - description: The ID of the Student Priority List record to confirm/unconfirm
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message returned will be 'Coordinator changed confirm succesfully!'
+          schema:
+            $ref: '#/definitions/models.JsonSuccesfulResponse'
+        "400":
+          description: Error returned will be 'No priority ID Specified.' or parsing
+            error.
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "401":
+          description: Error returned will be 'Unauthorized from access.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "404":
+          description: Error returned will be 'priority record with id X not found'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "409":
+          description: Error returned will be 'subject group X is full (Y/Z)'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "500":
+          description: Error returned will be related to database transactions, fetching,
+            or locks.
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Confirm or unconfirm a student's subject priority
+      tags:
+      - coordinator
+  /api/coordinator/student-priorities:
+    get:
+      description: Retrieves a sorted list of all student priorities belonging to
+        the coordinator's assigned faculty. Data is naturally grouped by student ID,
+        slot ID, and priority.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns a message and a 'data' array containing models.StudentPriorityList
+          schema:
+            $ref: '#/definitions/models.JsonGetCoordinatorPrioritiesResponse'
+        "400":
+          description: Error returned will be 'coordinator is not assigned to any
+            faculty'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "401":
+          description: Error returned will be 'Unauthorized from access.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "404":
+          description: Error returned will be 'coordinator with id X not found'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "500":
+          description: Error returned will be 'failed to fetch student priorities'
+            or other server errors.
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get coordinator student priorities
+      tags:
+      - coordinator
+  /api/faculties:
+    get:
+      description: Retrieves a list of all available faculties.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JsonGetFacultiesResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      summary: Get all faculties
+      tags:
+      - faculties
   /api/login:
     post:
       consumes:
@@ -271,6 +514,51 @@ paths:
       summary: Login
       tags:
       - auth
+  /api/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout the user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged out.
+          schema:
+            $ref: '#/definitions/models.JsonSuccesfulResponse'
+      summary: Logout
+      tags:
+      - auth
+  /api/manager/subject-student-overview:
+    get:
+      description: Retrieves a list of subjects, their groups and how many students
+        are in them.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JsonGetSubjectStudentOverviewResponse'
+            type: array
+        "400":
+          description: Error returned will be 'Manager has no faculty attached.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "403":
+          description: 'Error returned will be: ''Unauthorized from access.'''
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "500":
+          description: Error returned will be 'Failed to fetch.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get student subject overview list
+      tags:
+      - manager
   /api/priority:
     get:
       description: Retrieves a list of priorities for the logged-in student
@@ -283,7 +571,7 @@ paths:
             items:
               $ref: '#/definitions/models.JsonGetPrioritiesResponse'
             type: array
-        "401":
+        "403":
           description: 'Error returned will be: ''Unauthorized from access.'''
           schema:
             $ref: '#/definitions/models.JsonErrorResponse'
@@ -295,7 +583,7 @@ paths:
       - BearerAuth: []
       summary: Get priorities
       tags:
-      - priority
+      - student
     post:
       consumes:
       - application/json
@@ -318,7 +606,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.JsonErrorResponse'
-        "401":
+        "403":
           description: 'Error returned will be: ''Unauthorized.'''
           schema:
             $ref: '#/definitions/models.JsonErrorResponse'
@@ -326,7 +614,7 @@ paths:
       - BearerAuth: []
       summary: Add priority
       tags:
-      - priority
+      - student
   /api/priority/{id}:
     delete:
       description: Deletes a priority by ID and re-indexes the remaining priorities
@@ -351,7 +639,41 @@ paths:
       - BearerAuth: []
       summary: Delete priority
       tags:
-      - priority
+      - student
+  /api/student/choosable-subject:
+    get:
+      description: Retrieves a list of subjects that a student can choose
+      parameters:
+      - description: Filter by subject type
+        enum:
+        - professional
+        - free
+        in: query
+        name: subjectType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JsonChoosableSubjectResponse'
+            type: array
+        "400":
+          description: Error returned will be 'Specify subject type.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "403":
+          description: 'Error returned will be: ''Unauthorized from access.'''
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get choosable subjects for a student
+      tags:
+      - student
   /api/subjects:
     get:
       description: Retrieves a list of all available subjects, with optional query
