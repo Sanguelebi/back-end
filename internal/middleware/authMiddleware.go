@@ -62,3 +62,15 @@ func AdminOnly() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func ManagerOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userRole := c.Keys["userRole"]
+		if userRole != models.RoleManager.String() {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Not allowed to access the endpoint."})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}

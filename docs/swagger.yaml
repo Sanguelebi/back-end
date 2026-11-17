@@ -100,6 +100,16 @@ definitions:
           $ref: '#/definitions/models.StudentPriorityList'
         type: array
     type: object
+  models.JsonGetSubjectStudentOverviewResponse:
+    properties:
+      message:
+        example: Overview list fetched succesfully!
+        type: string
+      overview:
+        items:
+          $ref: '#/definitions/models.SubjectStudentOverviewResponse'
+        type: array
+    type: object
   models.JsonGetSubjectsResponse:
     properties:
       has_more:
@@ -293,6 +303,30 @@ definitions:
       to:
         type: string
     type: object
+  models.SubjectGroupOverview:
+    properties:
+      amount_of_students:
+        type: integer
+      group_id:
+        type: integer
+      group_no:
+        type: integer
+      max_amount:
+        type: integer
+      student_ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  models.SubjectStudentOverviewResponse:
+    properties:
+      subject:
+        $ref: '#/definitions/models.Subject'
+      subject_groups:
+        items:
+          $ref: '#/definitions/models.SubjectGroupOverview'
+        type: array
+    type: object
   models.Users:
     properties:
       email:
@@ -392,6 +426,36 @@ paths:
       summary: Logout
       tags:
       - auth
+  /api/manager/subject-student-overview:
+    get:
+      description: Retrieves a list of subjects, their groups and how many students
+        are in them.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JsonGetSubjectStudentOverviewResponse'
+            type: array
+        "400":
+          description: Error returned will be 'Manager has no faculty attached.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "403":
+          description: 'Error returned will be: ''Unauthorized from access.'''
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "500":
+          description: Error returned will be 'Failed to fetch.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get student subject overview list
+      tags:
+      - manager
   /api/priority:
     get:
       description: Retrieves a list of priorities for the logged-in student
@@ -404,7 +468,7 @@ paths:
             items:
               $ref: '#/definitions/models.JsonGetPrioritiesResponse'
             type: array
-        "401":
+        "403":
           description: 'Error returned will be: ''Unauthorized from access.'''
           schema:
             $ref: '#/definitions/models.JsonErrorResponse'
@@ -439,7 +503,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.JsonErrorResponse'
-        "401":
+        "403":
           description: 'Error returned will be: ''Unauthorized.'''
           schema:
             $ref: '#/definitions/models.JsonErrorResponse'
@@ -498,7 +562,7 @@ paths:
           description: Error returned will be 'Specify subject type.'
           schema:
             $ref: '#/definitions/models.JsonErrorResponse'
-        "401":
+        "403":
           description: 'Error returned will be: ''Unauthorized from access.'''
           schema:
             $ref: '#/definitions/models.JsonErrorResponse'
