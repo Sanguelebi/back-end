@@ -15,7 +15,7 @@ jobs:
 
       - name: Create .env for Docker Compose
         env:
-          BUILD_TARGET: prod
+          BUILD_TARGET: ${{ secrets.BUILD_TARGET }}
           GIN_MODE: ${{ secrets.GIN_MODE }}
           PORT: ${{ secrets.PORT }}
           DB_HOST: ${{ secrets.DB_HOST }}
