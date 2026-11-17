@@ -58,6 +58,7 @@ func SeedDatabase(db *gorm.DB) error {
 			&models.SubjectDifficulty{},
 			&models.ActiveRegistration{},
 			&models.InactiveRegistration{},
+			&models.StudentSubjectAllowance{},
 		); err != nil {
 			return err
 		}
@@ -517,7 +518,33 @@ func SeedDatabase(db *gorm.DB) error {
 			return err
 		}
 
-		log.Println("[INFO] Database seeded successfully with 4 faculties and 80 subjects!")
+		// ======== 14. Seed Student Subject Allowances ========
+		// Seeding allowances for Semesters 1 through 4 for the two active students
+		seededStudents := []models.Users{users[1], users[2]}
+
+		for _, student := range seededStudents {
+			for sem := models.Semester(1); sem <= 4; sem++ {
+
+				// Standard allowance: 4 professional subjects, 1 free subject per semester
+				// (Assuming standard 30 credits per semester where most subjects are 5-6 credits)
+				allowance := models.StudentSubjectAllowance{
+					StudentId:                    student.ID,
+					ProfessionalSubjectAllowance: 4,
+					FreeSubjectAllowance:         1,
+					Semester:                     sem,
+				}
+
+				// Use FirstOrCreate with the composite unique index fields (StudentId + Semester)
+				if err := tx.FirstOrCreate(&allowance, models.StudentSubjectAllowance{
+					StudentId: allowance.StudentId,
+					Semester:  allowance.Semester,
+				}).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		log.Println("[INFO] Database seeded successfully with 4 faculties, 80 subjects, and student allowances!")
 		return nil
 	})
 }

@@ -199,7 +199,16 @@ type ChoosableSubjects struct {
 	Subject      Subject     `gorm:"foreignKey:SubjectID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	SubjectType  SubjectType `gorm:"type:smallint;not null"`
 	FromSemester Semester    `gorm:"type:smallint;not null;check:from_semester BETWEEN 1 AND 16;"`
-	ToSemester   Semester    `gorm:"type:smallint;not null;check:to_semester BETWEEN 1 AND 16;"`
+	ToSemester   Semester    `gorm:"type:smallint;not null;check:to_semester BETWEEN 1 AND 16;check:to_semester >= from_semester"`
+}
+
+type StudentSubjectAllowance struct {
+	ID                           uint     `gorm:"primaryKey;autoIncrement" json:"-"`
+	StudentId                    uint     `gorm:"type:integer;not null;uniqueIndex:idx_student_semester" json:"student_id" example:"2"`
+	Student                      Users    `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	ProfessionalSubjectAllowance int      `gorm:"type:integer;not null;" json:"professional_subject_allowance" example:"2"`
+	FreeSubjectAllowance         int      `gorm:"type:integer;not null;" json:"free_subject_allowance" example:"1"`
+	Semester                     Semester `gorm:"type:smallint;not null;check:semester BETWEEN 1 AND 16;uniqueIndex:idx_student_semester" json:"semester" example:"2"`
 }
 
 type Role int
