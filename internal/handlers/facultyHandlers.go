@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"course-selection-platform/config"
-	//"course-selection-platform/internal/models"
 	"course-selection-platform/internal/services"
+
 	"github.com/gin-gonic/gin"
 )
 

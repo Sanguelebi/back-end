@@ -1,7 +1,9 @@
 package models
 
 type PriorityRequest struct {
-	SubjectGroupID uint  `json:"subject_group_id" example:"2"`
+	SubjectGroupID uint               `json:"subject_group_id" example:"2"`
+	SlotID         int                `json:"slot_id" example:"1"`
+	SubjectType    SubjectType 		  `json:"subject_type" swaggertype:"string" example:"free"`
 }
 
 type ChoosableSubjectResponse struct {

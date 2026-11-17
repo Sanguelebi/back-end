@@ -55,5 +55,11 @@ type JsonGetPrioritiesResponse struct {
 // ===== MANAGER =====
 type JsonGetSubjectStudentOverviewResponse struct {
 	Message    string                `json:"message" example:"Overview list fetched succesfully!"`
-	Overview []SubjectStudentOverviewResponse `json:"overview"`
+	Overview SubjectStudentOverviewResponse `json:"overview"`
+}
+
+// ====== COORDINATOR ======
+type JsonGetCoordinatorPrioritiesResponse struct {
+	Message string                `json:"message" example:"Student priorities fetched succesfully!"`
+	Data    []StudentPriorityList `json:"data"`
 }

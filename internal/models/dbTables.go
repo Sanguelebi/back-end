@@ -355,13 +355,15 @@ type SubjectGroup struct {
 }
 
 type StudentPriorityList struct {
-	ID             uint         `gorm:"primaryKey;autoIncrement" example:"1"`
-	Priority       int16        `gorm:"type:smallint;not null" example:"1"`
-	SubjectGroupId uint         `gorm:"type:integer;not null" example:"2"`
+	ID             uint         `gorm:"primaryKey;autoIncrement" json:"id" example:"1"`
+	Priority       int16        `gorm:"type:smallint;not null" json:"priority" example:"1"`
+	SlotID         uint         `gorm:"type:integer;not null" json:"slot_id" example:"1"`
+	SubjectGroupId uint         `gorm:"type:integer;not null" json:"subject_group_id" example:"2"`
 	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
-	StudentId      uint         `gorm:"type:integer;not null" example:"2"`
+	StudentId      uint         `gorm:"type:integer;not null" json:"student_id" example:"2"`
 	Student        Users        `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 	Confirm 	   bool 		`gorm:"type:boolean;default:false" json:"confirm" example:"false"`
+	SubjectType    SubjectType 	`gorm:"type:smallint;not null" json:"subject_type" swaggertype:"string" example:"professional"`
 }
 
 type LecturerRating struct {

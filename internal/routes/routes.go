@@ -85,6 +85,17 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 			handlers.GetSubjectStudentOverviewHandler(app),
 		)
 
+		api.GET("/coordinator/student-priorities",
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.CoordinatorOnly(),
+			handlers.GetCoordinatorStudentPrioritiesHandler(app),
+		)
+		api.POST("/coordinator/confirm-subject", 
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.CoordinatorOnly(),
+			handlers.CoordinatorConfirmSubjectHandler(app),
+		)
+
 		api.POST("/login", handlers.LoginHandler(app))
 		api.POST("/logout", handlers.LogoutHandler(app))
 	}

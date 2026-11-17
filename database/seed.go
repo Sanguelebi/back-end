@@ -300,6 +300,37 @@ func SeedDatabase(db *gorm.DB) error {
 				},
 				plainPassword: "StudentPass123!",
 			},
+			// --- Coordinators for testing CoordinatorConfirmSubjectService ---
+			{
+				user: models.Users{
+					Email:         "cs.coordinator@university.edu",
+					Role:          models.RoleCordinator,
+					FirstName:     "ანა",
+					LastName:      "ბაქრაძე",
+					Gender:        models.Female,
+					PersonalNo:    "01001001014",
+					PhoneNumber:   "+995555141414",
+					PhotoUrl:      "https://example.com/coordinator_cs.jpg",
+					StudentStatus: nil,
+					FacultyID:     csFacultyID, // Computer Science Coordinator
+				},
+				plainPassword: "CoordinatorPass123!",
+			},
+			{
+				user: models.Users{
+					Email:         "bus.coordinator@university.edu",
+					Role:          models.RoleCordinator,
+					FirstName:     "ნიკოლოზ",
+					LastName:      "ჩიქოვანი",
+					Gender:        models.Male,
+					PersonalNo:    "01001001015",
+					PhoneNumber:   "+995555151515",
+					PhotoUrl:      "https://example.com/coordinator_bus.jpg",
+					StudentStatus: nil,
+					FacultyID:     businessFacultyID, // Business Coordinator
+				},
+				plainPassword: "CoordinatorPass123!",
+			},
 		}
 
 		var users []models.Users
@@ -584,17 +615,30 @@ func SeedDatabase(db *gorm.DB) error {
 
 		// ======== 8. Seed Initial Student Priority List ========
 		priorities := []models.StudentPriorityList{
-			{Priority: 1, SubjectGroupId: subjectGroups[0].ID, StudentId: users[1].ID},  // Subj 0 (CS)
-			{Priority: 2, SubjectGroupId: subjectGroups[2].ID, StudentId: users[1].ID},  // Subj 1 (CS)
-			{Priority: 1, SubjectGroupId: subjectGroups[80].ID, StudentId: users[2].ID}, // Subj 40 (Law)
-			{Priority: 2, SubjectGroupId: subjectGroups[82].ID, StudentId: users[2].ID}, // Subj 41 (Law)
-			{Priority: 1, SubjectGroupId: subjectGroups[40].ID, StudentId: users[3].ID}, // Subj 20 (Business)
-			{Priority: 1, SubjectGroupId: subjectGroups[60].ID, StudentId: users[4].ID}, // Subj 30 (Business)
+			// Student: g.beridze (users[1] - CS)
+			// Slot 1: Free Subjects
+			{Priority: 1, SubjectGroupId: subjectGroups[0].ID, SlotID: 1, SubjectType: models.SubjectFree, StudentId: users[1].ID}, 
+			{Priority: 2, SubjectGroupId: subjectGroups[2].ID, SlotID: 1, SubjectType: models.SubjectFree, StudentId: users[1].ID}, 
+			// Slot 2: Professional Subjects
+			{Priority: 1, SubjectGroupId: subjectGroups[4].ID, SlotID: 2, SubjectType: models.SubjectProfessional, StudentId: users[1].ID}, 
+
+			// Student: n.kapanadze (users[2] - Law)
+			// Slot 1: Professional Subjects
+			{Priority: 1, SubjectGroupId: subjectGroups[80].ID, SlotID: 1, SubjectType: models.SubjectProfessional, StudentId: users[2].ID}, 
+			{Priority: 2, SubjectGroupId: subjectGroups[82].ID, SlotID: 1, SubjectType: models.SubjectProfessional, StudentId: users[2].ID}, 
+
+			// Student: d.maisuradze (users[3] - Business)
+			{Priority: 1, SubjectGroupId: subjectGroups[40].ID, SlotID: 1, SubjectType: models.SubjectFree, StudentId: users[3].ID}, 
+			
+			// Student: m.gelashvili (users[4] - Business)
+			{Priority: 1, SubjectGroupId: subjectGroups[60].ID, SlotID: 1, SubjectType: models.SubjectProfessional, StudentId: users[4].ID}, 
 		}
 		for i := range priorities {
 			if err := tx.FirstOrCreate(&priorities[i], models.StudentPriorityList{
 				StudentId:      priorities[i].StudentId,
 				SubjectGroupId: priorities[i].SubjectGroupId,
+				SlotID:         priorities[i].SlotID, 
+				// SubjectType is inserted automatically via priorities[i]
 			}).Error; err != nil {
 				return err
 			}

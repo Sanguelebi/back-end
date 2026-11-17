@@ -11,17 +11,17 @@ import (
 )
 
 func GetStudentPrioritiesService(db *gorm.DB, studentID uint) ([]models.StudentPriorityList, error) {
-	var priorities []models.StudentPriorityList
+    var priorities []models.StudentPriorityList
 
-	err := db.Where("student_id = ?", studentID).
-		Order("priority ASC").
-		Find(&priorities).Error
+    err := db.Preload("SubjectGroup").
+        Where("student_id = ?", studentID).
+        Order("slot_id ASC, priority ASC").
+        Find(&priorities).Error
 
-	return priorities, err
+    return priorities, err
 }
 
-func AddStudentPriorityService(db *gorm.DB, studentID, groupID uint) error {
-	// Verify that the SubjectGroup exists before inserting
+func AddStudentPriorityService(db *gorm.DB, studentID, groupID uint, slotID int, subjectType models.SubjectType) error {
 	var group models.SubjectGroup
 	if err := db.First(&group, groupID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -30,44 +30,59 @@ func AddStudentPriorityService(db *gorm.DB, studentID, groupID uint) error {
 		return err
 	}
 
-	// Prevent adding the exact same subject group twice
 	var duplicate models.StudentPriorityList
 	if err := db.Where("student_id = ? AND subject_group_id = ?", studentID, groupID).First(&duplicate).Error; err == nil {
 		return errors.New("this subject group is already in your priority list")
 	}
 
-	// Check current priority count limit (Max 3)
 	var count int64
-	if err := db.Model(&models.StudentPriorityList{}).Where("student_id = ?", studentID).Count(&count).Error; err != nil {
+	if err := db.Model(&models.StudentPriorityList{}).
+		Where("student_id = ? AND slot_id = ?", studentID, slotID).
+		Count(&count).Error; err != nil {
 		return err
 	}
 
 	if count >= 3 {
-		return errors.New("maximum 3 priorities allowed")
+		return errors.New("maximum 3 priorities allowed per slot")
 	}
 
-	// Automatically set priority (1, 2, or 3)
 	entry := models.StudentPriorityList{
 		StudentId:      studentID,
 		SubjectGroupId: groupID,
+		SlotID:         uint(slotID),
+		SubjectType:    subjectType,
 		Priority:       int16(count + 1),
 	}
 
 	return db.Create(&entry).Error
 }
 
+
 func DeleteStudentPriorityService(db *gorm.DB, studentID, priorityID uint) error {
-	res := db.Where("id = ? AND student_id = ?", priorityID, studentID).Delete(&models.StudentPriorityList{})
-	if res.Error != nil || res.RowsAffected == 0 {
-		return errors.New("priority item not found")
+	var target models.StudentPriorityList
+
+	// Find the item first to extract its SlotID before deleting
+	if err := db.Where("id = ? AND student_id = ?", priorityID, studentID).First(&target).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("priority item not found")
+		}
+		return err
 	}
 
-	// Fetch remaining items and fix sequence numbers (1, 2...)
-	var remaining []models.StudentPriorityList
-	db.Where("student_id = ?", studentID).Order("priority asc").Find(&remaining)
+	slotID := target.SlotID
 
+	// Delete the item
+	if err := db.Delete(&target).Error; err != nil {
+		return err
+	}
+
+	// Fetch remaining items ONLY in the affected slot and fix sequence numbers (1, 2...)
+	var remaining []models.StudentPriorityList
+	db.Where("student_id = ? AND slot_id = ?", studentID, slotID).Order("priority asc").Find(&remaining)
+
+	// Reorder smoothly so there are no gaps
 	for i, item := range remaining {
-		db.Model(&item).Update("priority", i+1)
+		db.Model(&item).Update("priority", int16(i+1))
 	}
 
 	return nil

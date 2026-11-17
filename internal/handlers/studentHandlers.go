@@ -75,7 +75,21 @@ func AddStudentPriorityHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := services.AddStudentPriorityService(db, studentID, req.SubjectGroupID); err != nil {
+		// --- Explicit Validation Checks ---
+		if req.SlotID <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "slot_id is required and must be greater than 0"})
+			return
+		}
+		if req.SubjectType <= 0 { 
+			c.JSON(http.StatusBadRequest, gin.H{"error": "subject_type is required and cannot be empty"})
+			return
+		}
+		if req.SubjectGroupID <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "subject_group_id is required and must be valid"})
+			return
+		}
+
+		if err := services.AddStudentPriorityService(db, studentID, req.SubjectGroupID, req.SlotID, req.SubjectType); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

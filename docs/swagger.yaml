@@ -80,6 +80,16 @@ definitions:
         example: Invalid request format
         type: string
     type: object
+  models.JsonGetCoordinatorPrioritiesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.StudentPriorityList'
+        type: array
+      message:
+        example: Student priorities fetched succesfully!
+        type: string
+    type: object
   models.JsonGetFacultiesResponse:
     properties:
       faculties:
@@ -106,9 +116,7 @@ definitions:
         example: Overview list fetched succesfully!
         type: string
       overview:
-        items:
-          $ref: '#/definitions/models.SubjectStudentOverviewResponse'
-        type: array
+        $ref: '#/definitions/models.SubjectStudentOverviewResponse'
     type: object
   models.JsonGetSubjectsResponse:
     properties:
@@ -199,9 +207,15 @@ definitions:
     type: object
   models.PriorityRequest:
     properties:
+      slot_id:
+        example: 1
+        type: integer
       subject_group_id:
         example: 2
         type: integer
+      subject_type:
+        example: free
+        type: string
     type: object
   models.RegisterUserRequest:
     properties:
@@ -253,12 +267,18 @@ definitions:
       priority:
         example: 1
         type: integer
-      studentId:
+      slot_id:
+        example: 1
+        type: integer
+      student_id:
         example: 2
         type: integer
-      subjectGroupId:
+      subject_group_id:
         example: 2
         type: integer
+      subject_type:
+        example: professional
+        type: string
     type: object
   models.Subject:
     properties:
@@ -365,6 +385,86 @@ info:
   description: API endpoints for the course selection platform.
   title: Course Selection API
 paths:
+  /api/coordinator/confirm-subject:
+    post:
+      description: Toggles the confirmation status of a specific student priority.
+        If confirming, it automatically removes any other confirmed priority in the
+        same slot. Checks group capacity before confirming.
+      parameters:
+      - description: The ID of the Student Priority List record to confirm/unconfirm
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message returned will be 'Coordinator changed confirm succesfully!'
+          schema:
+            $ref: '#/definitions/models.JsonSuccesfulResponse'
+        "400":
+          description: Error returned will be 'No priority ID Specified.' or parsing
+            error.
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "401":
+          description: Error returned will be 'Unauthorized from access.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "404":
+          description: Error returned will be 'priority record with id X not found'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "409":
+          description: Error returned will be 'subject group X is full (Y/Z)'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "500":
+          description: Error returned will be related to database transactions, fetching,
+            or locks.
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Confirm or unconfirm a student's subject priority
+      tags:
+      - coordinator
+  /api/coordinator/student-priorities:
+    get:
+      description: Retrieves a sorted list of all student priorities belonging to
+        the coordinator's assigned faculty. Data is naturally grouped by student ID,
+        slot ID, and priority.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns a message and a 'data' array containing models.StudentPriorityList
+          schema:
+            $ref: '#/definitions/models.JsonGetCoordinatorPrioritiesResponse'
+        "400":
+          description: Error returned will be 'coordinator is not assigned to any
+            faculty'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "401":
+          description: Error returned will be 'Unauthorized from access.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "404":
+          description: Error returned will be 'coordinator with id X not found'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "500":
+          description: Error returned will be 'failed to fetch student priorities'
+            or other server errors.
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get coordinator student priorities
+      tags:
+      - coordinator
   /api/faculties:
     get:
       description: Retrieves a list of all available faculties.

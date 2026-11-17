@@ -15,6 +15,119 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/coordinator/confirm-subject": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Toggles the confirmation status of a specific student priority. If confirming, it automatically removes any other confirmed priority in the same slot. Checks group capacity before confirming.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "coordinator"
+                ],
+                "summary": "Confirm or unconfirm a student's subject priority",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The ID of the Student Priority List record to confirm/unconfirm",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message returned will be 'Coordinator changed confirm succesfully!'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Error returned will be 'No priority ID Specified.' or parsing error.",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error returned will be 'Unauthorized from access.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Error returned will be 'priority record with id X not found'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Error returned will be 'subject group X is full (Y/Z)'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error returned will be related to database transactions, fetching, or locks.",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/coordinator/student-priorities": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a sorted list of all student priorities belonging to the coordinator's assigned faculty. Data is naturally grouped by student ID, slot ID, and priority.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "coordinator"
+                ],
+                "summary": "Get coordinator student priorities",
+                "responses": {
+                    "200": {
+                        "description": "Returns a message and a 'data' array containing models.StudentPriorityList",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonGetCoordinatorPrioritiesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Error returned will be 'coordinator is not assigned to any faculty'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error returned will be 'Unauthorized from access.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Error returned will be 'coordinator with id X not found'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error returned will be 'failed to fetch student priorities' or other server errors.",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/faculties": {
             "get": {
                 "description": "Retrieves a list of all available faculties.",
@@ -685,6 +798,21 @@ const docTemplate = `{
                 }
             }
         },
+        "models.JsonGetCoordinatorPrioritiesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.StudentPriorityList"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Student priorities fetched succesfully!"
+                }
+            }
+        },
         "models.JsonGetFacultiesResponse": {
             "type": "object",
             "properties": {
@@ -723,10 +851,7 @@ const docTemplate = `{
                     "example": "Overview list fetched succesfully!"
                 },
                 "overview": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.SubjectStudentOverviewResponse"
-                    }
+                    "$ref": "#/definitions/models.SubjectStudentOverviewResponse"
                 }
             }
         },
@@ -859,9 +984,17 @@ const docTemplate = `{
         "models.PriorityRequest": {
             "type": "object",
             "properties": {
+                "slot_id": {
+                    "type": "integer",
+                    "example": 1
+                },
                 "subject_group_id": {
                     "type": "integer",
                     "example": 2
+                },
+                "subject_type": {
+                    "type": "string",
+                    "example": "free"
                 }
             }
         },
@@ -932,13 +1065,21 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
-                "studentId": {
+                "slot_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "student_id": {
                     "type": "integer",
                     "example": 2
                 },
-                "subjectGroupId": {
+                "subject_group_id": {
                     "type": "integer",
                     "example": 2
+                },
+                "subject_type": {
+                    "type": "string",
+                    "example": "professional"
                 }
             }
         },
