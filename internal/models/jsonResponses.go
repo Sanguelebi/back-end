@@ -25,6 +25,12 @@ type JsonLoginResponse struct {
 	User    LoginUserResponse `json:"user"`
 }
 
+// ==== CHOOSABLE SUBJECTS ====
+type JsonChoosableSubjectResponse struct {
+	Message string 						`json:"message" example:"Choosable Subjects Fetched Succesfully!"`
+	Subjects []ChoosableSubjectResponse `json:"subjects"`
+}
+
 // ==== SUBJECTS =====
 
 type JsonGetSubjectsResponse struct {

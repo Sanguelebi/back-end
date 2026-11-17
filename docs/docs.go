@@ -102,7 +102,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "priority"
+                    "student"
                 ],
                 "summary": "Get priorities",
                 "responses": {
@@ -143,7 +143,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "priority"
+                    "student"
                 ],
                 "summary": "Add priority",
                 "parameters": [
@@ -191,7 +191,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "priority"
+                    "student"
                 ],
                 "summary": "Delete priority",
                 "parameters": [
@@ -212,6 +212,59 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Service error",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/student/choosable-subject": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of subjects that a student can choose",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "student"
+                ],
+                "summary": "Get choosable subjects for a student",
+                "parameters": [
+                    {
+                        "enum": [
+                            "professional",
+                            "free"
+                        ],
+                        "type": "string",
+                        "description": "Filter by subject type",
+                        "name": "subjectType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JsonChoosableSubjectResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error returned will be 'Specify subject type.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error returned will be: 'Unauthorized from access.'",
                         "schema": {
                             "$ref": "#/definitions/models.JsonErrorResponse"
                         }
@@ -450,6 +503,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.ChoosableSubjectResponse": {
+            "type": "object",
+            "properties": {
+                "subjectData": {
+                    "$ref": "#/definitions/models.Subject"
+                },
+                "subjectGroups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubjectGroup"
+                    }
+                }
+            }
+        },
         "models.EditUserRequest": {
             "type": "object",
             "properties": {
@@ -522,6 +589,21 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "User added succesfully!"
+                }
+            }
+        },
+        "models.JsonChoosableSubjectResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Choosable Subjects Fetched Succesfully!"
+                },
+                "subjects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ChoosableSubjectResponse"
+                    }
                 }
             }
         },
@@ -616,6 +698,26 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "The action has been executed succesfully!"
+                }
+            }
+        },
+        "models.Lecturer": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "photoUrl": {
+                    "type": "string"
                 }
             }
         },
@@ -780,11 +882,54 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SubjectGroup": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "integer"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "groupNo": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lectureType": {
+                    "type": "string",
+                    "example": "lecture"
+                },
+                "lecturer": {
+                    "$ref": "#/definitions/models.Lecturer"
+                },
+                "lecturerId": {
+                    "type": "integer"
+                },
+                "maxStudent": {
+                    "type": "integer"
+                },
+                "subject": {
+                    "$ref": "#/definitions/models.Subject"
+                },
+                "subjectId": {
+                    "type": "integer"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Users": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
+                },
+                "faculty_id": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "first_name": {
                     "type": "string"
