@@ -66,7 +66,6 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 			middleware.RequireAuth(app.JWTSecret), 
 			handlers.GetStudentChoosableSubjectsHandler(app),
 		)		
-
 		api.GET("/priority",
 			middleware.RequireAuth(app.JWTSecret),
 			handlers.GetStudentPrioritiesHandler(app.DB),
@@ -80,7 +79,14 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 			handlers.DeleteStudentPriorityHandler(app.DB),
 		)
 
+		api.GET("/manager/subject-student-overview", 
+			middleware.RequireAuth(app.JWTSecret),
+			middleware.ManagerOnly(),
+			handlers.GetSubjectStudentOverviewHandler(app),
+		)
+
 		api.POST("/login", handlers.LoginHandler(app))
+		api.POST("/logout", handlers.LogoutHandler(app))
 	}
 
 	// Access to Swagger only when in Dev mode.

@@ -90,6 +90,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/logout": {
+            "post": {
+                "description": "Logout the user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout",
+                "responses": {
+                    "200": {
+                        "description": "Logged out.",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSuccesfulResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/manager/subject-student-overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of subjects, their groups and how many students are in them.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "manager"
+                ],
+                "summary": "Get student subject overview list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JsonGetSubjectStudentOverviewResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error returned will be 'Manager has no faculty attached.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Error returned will be: 'Unauthorized from access.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error returned will be 'Failed to fetch.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/priority": {
             "get": {
                 "security": [
@@ -115,7 +184,7 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "401": {
+                    "403": {
                         "description": "Error returned will be: 'Unauthorized from access.'",
                         "schema": {
                             "$ref": "#/definitions/models.JsonErrorResponse"
@@ -170,7 +239,7 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.JsonErrorResponse"
                         }
                     },
-                    "401": {
+                    "403": {
                         "description": "Error returned will be: 'Unauthorized.'",
                         "schema": {
                             "$ref": "#/definitions/models.JsonErrorResponse"
@@ -263,7 +332,7 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.JsonErrorResponse"
                         }
                     },
-                    "401": {
+                    "403": {
                         "description": "Error returned will be: 'Unauthorized from access.'",
                         "schema": {
                             "$ref": "#/definitions/models.JsonErrorResponse"
@@ -646,6 +715,21 @@ const docTemplate = `{
                 }
             }
         },
+        "models.JsonGetSubjectStudentOverviewResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Overview list fetched succesfully!"
+                },
+                "overview": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubjectStudentOverviewResponse"
+                    }
+                }
+            }
+        },
         "models.JsonGetSubjectsResponse": {
             "type": "object",
             "properties": {
@@ -918,6 +1002,43 @@ const docTemplate = `{
                 },
                 "to": {
                     "type": "string"
+                }
+            }
+        },
+        "models.SubjectGroupOverview": {
+            "type": "object",
+            "properties": {
+                "amount_of_students": {
+                    "type": "integer"
+                },
+                "group_id": {
+                    "type": "integer"
+                },
+                "group_no": {
+                    "type": "integer"
+                },
+                "max_amount": {
+                    "type": "integer"
+                },
+                "student_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.SubjectStudentOverviewResponse": {
+            "type": "object",
+            "properties": {
+                "subject": {
+                    "$ref": "#/definitions/models.Subject"
+                },
+                "subject_groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubjectGroupOverview"
+                    }
                 }
             }
         },

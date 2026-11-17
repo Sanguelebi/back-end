@@ -52,6 +52,23 @@ func LoginHandler(app *config.AppData) gin.HandlerFunc {
 	}
 }
 
+func LogoutHandler(app *config.AppData) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.SetSameSite(http.SameSiteStrictMode)
+		c.SetCookie(
+			"token",
+			"",
+			-1,
+			"/",
+			"",
+			app.IsSecure,
+			true,
+		)
+
+		c.JSON(http.StatusOK, gin.H{"message": "logged out successfully"})
+	}
+}
+
 func GetAllUsersHandler(app *config.AppData) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userData, err := services.GetAllUsersService(app)
