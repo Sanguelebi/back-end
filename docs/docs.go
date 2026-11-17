@@ -920,6 +920,10 @@ const docTemplate = `{
         "models.StudentPriorityList": {
             "type": "object",
             "properties": {
+                "confirm": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "id": {
                     "type": "integer",
                     "example": 1

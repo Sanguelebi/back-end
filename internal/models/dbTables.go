@@ -361,6 +361,7 @@ type StudentPriorityList struct {
 	SubjectGroup   SubjectGroup `gorm:"foreignKey:SubjectGroupId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 	StudentId      uint         `gorm:"type:integer;not null" example:"2"`
 	Student        Users        `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	Confirm 	   bool 		`gorm:"type:boolean;default:false" json:"confirm" example:"false"`
 }
 
 type LecturerRating struct {

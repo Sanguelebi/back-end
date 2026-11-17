@@ -244,6 +244,9 @@ definitions:
     type: object
   models.StudentPriorityList:
     properties:
+      confirm:
+        example: false
+        type: boolean
       id:
         example: 1
         type: integer
