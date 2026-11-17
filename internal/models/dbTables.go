@@ -143,6 +143,8 @@ type Users struct {
 	PhoneNumber   string         `gorm:"type:varchar(255);not null" json:"phone_number"`
 	PhotoUrl      string         `gorm:"type:text;not null" json:"photo_url"`
 	StudentStatus *StudentStatus `gorm:"type:smallint" json:"student_status" swaggertype:"string" example:"active"`
+    FacultyID     *uint          `gorm:"type:integer" json:"faculty_id" example:"1"`
+    Faculty       *Faculty       `gorm:"foreignKey:FacultyID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"-"`
 }
 
 type Subject struct {
@@ -196,20 +198,29 @@ func (s SubjectType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.String())
 }
 
+func ParseSubjectType(s string) (SubjectType, error) {
+	switch strings.TrimSpace(strings.ToLower(s)) {
+	case "professional":
+		return SubjectProfessional, nil
+	case "free":
+		return SubjectFree, nil
+	default:
+		return 0, fmt.Errorf("Invalid Subject Type provided: %q", s)
+	}
+}
+
 func (s *SubjectType) UnmarshalJSON(data []byte) error {
 	var str string
 	if err := json.Unmarshal(data, &str); err != nil {
 		return err
 	}
 
-	switch strings.TrimSpace(strings.ToLower(str)) {
-	case "professional":
-		*s = SubjectProfessional
-	case "free":
-		*s = SubjectFree
-	default:
-		return fmt.Errorf("Invalid Subject Type provided: %q", str)
+	subjectType, err := ParseSubjectType(str)
+	if err != nil {
+		return err
 	}
+	*s = subjectType
+
 	return nil
 }
 
@@ -308,6 +319,27 @@ func (s LectureType) String() string {
 	}
 }
 
+func (l *LectureType) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	switch strings.TrimSpace(strings.ToLower(str)) {
+	case "lecture":
+		*l = Lecture
+	case "seminar":
+		*l = Seminar
+	default:
+		return fmt.Errorf("Invalid Lecture Type provided: %q", str)
+	}
+	return nil
+}
+
+func (l LectureType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(l.String())
+}
+
 type SubjectGroup struct {
 	ID          uint        `gorm:"primaryKey;autoIncrement"`
 	GroupNo     int16       `gorm:"type:smallint;not null"`
@@ -317,7 +349,7 @@ type SubjectGroup struct {
 	From        string      `gorm:"type:varchar(5);not null"`
 	To          string      `gorm:"type:varchar(5);not null"`
 	MaxStudent  int8        `gorm:"type:smallint;not null"`
-	LectureType LectureType `gorm:"type:smallint;not null"`
+	LectureType LectureType `gorm:"type:smallint;not null" swaggertype:"string" example:"lecture"`
 	LecturerId  uint        `gorm:"type:integer;not null"`
 	Lecturer    Lecturer    `gorm:"foreignKey:LecturerId;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 }

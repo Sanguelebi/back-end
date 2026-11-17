@@ -62,6 +62,11 @@ func SetupRouter(app *config.AppData) *gin.Engine {
 		api.GET("/subjects", handlers.GetAllSubjectsHandler(app.DB))
 		api.GET("/faculties", handlers.GetFacultiesHandler(app))
 
+		api.GET("/student/choosable-subjects", 
+			middleware.RequireAuth(app.JWTSecret), 
+			handlers.GetStudentChoosableSubjectsHandler(app),
+		)		
+
 		api.GET("/priority",
 			middleware.RequireAuth(app.JWTSecret),
 			handlers.GetStudentPrioritiesHandler(app.DB),

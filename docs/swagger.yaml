@@ -1,5 +1,14 @@
 basePath: /api
 definitions:
+  models.ChoosableSubjectResponse:
+    properties:
+      subjectData:
+        $ref: '#/definitions/models.Subject'
+      subjectGroups:
+        items:
+          $ref: '#/definitions/models.SubjectGroup'
+        type: array
+    type: object
   models.EditUserRequest:
     properties:
       email:
@@ -54,6 +63,16 @@ definitions:
       message:
         example: User added succesfully!
         type: string
+    type: object
+  models.JsonChoosableSubjectResponse:
+    properties:
+      message:
+        example: Choosable Subjects Fetched Succesfully!
+        type: string
+      subjects:
+        items:
+          $ref: '#/definitions/models.ChoosableSubjectResponse'
+        type: array
     type: object
   models.JsonErrorResponse:
     properties:
@@ -116,6 +135,19 @@ definitions:
     properties:
       message:
         example: The action has been executed succesfully!
+        type: string
+    type: object
+  models.Lecturer:
+    properties:
+      description:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+      photoUrl:
         type: string
     type: object
   models.LoginUserRequest:
@@ -235,10 +267,39 @@ definitions:
         example: http://link_to_syllabus_pdf
         type: string
     type: object
+  models.SubjectGroup:
+    properties:
+      day:
+        type: integer
+      from:
+        type: string
+      groupNo:
+        type: integer
+      id:
+        type: integer
+      lectureType:
+        example: lecture
+        type: string
+      lecturer:
+        $ref: '#/definitions/models.Lecturer'
+      lecturerId:
+        type: integer
+      maxStudent:
+        type: integer
+      subject:
+        $ref: '#/definitions/models.Subject'
+      subjectId:
+        type: integer
+      to:
+        type: string
+    type: object
   models.Users:
     properties:
       email:
         type: string
+      faculty_id:
+        example: 1
+        type: integer
       first_name:
         type: string
       gender:
@@ -340,7 +401,7 @@ paths:
       - BearerAuth: []
       summary: Get priorities
       tags:
-      - priority
+      - student
     post:
       consumes:
       - application/json
@@ -371,7 +432,7 @@ paths:
       - BearerAuth: []
       summary: Add priority
       tags:
-      - priority
+      - student
   /api/priority/{id}:
     delete:
       description: Deletes a priority by ID and re-indexes the remaining priorities
@@ -396,7 +457,41 @@ paths:
       - BearerAuth: []
       summary: Delete priority
       tags:
-      - priority
+      - student
+  /api/student/choosable-subject:
+    get:
+      description: Retrieves a list of subjects that a student can choose
+      parameters:
+      - description: Filter by subject type
+        enum:
+        - professional
+        - free
+        in: query
+        name: subjectType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JsonChoosableSubjectResponse'
+            type: array
+        "400":
+          description: Error returned will be 'Specify subject type.'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "401":
+          description: 'Error returned will be: ''Unauthorized from access.'''
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get choosable subjects for a student
+      tags:
+      - student
   /api/subjects:
     get:
       description: Retrieves a list of all available subjects, with optional query
