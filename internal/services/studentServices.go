@@ -88,6 +88,25 @@ func DeleteStudentPriorityService(db *gorm.DB, studentID, priorityID uint) error
 	return nil
 }
 
+func GetStudentSubjectAllowanceService(app *config.AppData, studentID uint) (int, models.StudentSubjectAllowance, error) {
+	currentSemester, err := calculateCurrentSemester(app.DB, studentID)
+	if err != nil {
+		return http.StatusInternalServerError, models.StudentSubjectAllowance{}, fmt.Errorf("failed to calculate student semester: %w", err)
+	}
+
+	var allowance models.StudentSubjectAllowance
+	if err := app.DB.
+		Where("student_id = ? AND semester = ?", studentID, currentSemester).
+		First(&allowance).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return http.StatusNotFound, models.StudentSubjectAllowance{}, fmt.Errorf("allowance not found for student %d in semester %d", studentID, currentSemester)
+		}
+		return http.StatusInternalServerError, models.StudentSubjectAllowance{}, fmt.Errorf("failed to fetch student subject allowance: %w", err)
+	}
+
+	return http.StatusOK, allowance, nil
+}
+
 func GetStudentChoosableSubjectsService(app *config.AppData, studentID uint, subjectType models.SubjectType) (int, []models.ChoosableSubjectResponse, error) {
 	// Dynamically calculate the student's current semester based on enrollment history
 	currentSemester, err := calculateCurrentSemester(app.DB, studentID)

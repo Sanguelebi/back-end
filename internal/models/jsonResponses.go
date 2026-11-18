@@ -31,6 +31,11 @@ type JsonChoosableSubjectResponse struct {
 	Subjects []ChoosableSubjectResponse `json:"subjects"`
 }
 
+type JsonSubjectAllowanceResponse struct {
+	Message   string                  `json:"message" example:"Allowance fetched succesfully."`
+	Allowance StudentSubjectAllowance `json:"allowance"`
+}
+
 // ==== SUBJECTS =====
 
 type JsonGetSubjectsResponse struct {
