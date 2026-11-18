@@ -12,6 +12,17 @@ package swagger_source
 // @Router /api/student/choosable-subject [get]
 func _doc_GetStudentChoosableSubjects() {}
 
+// @Summary Get student subject allowance
+// @Description Retrieves the subject slot allowances assigned to the authenticated student.
+// @Tags student
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} models.JsonSubjectAllowanceResponse
+// @Failure 401 {object} models.JsonErrorResponse "Error returned will be: 'Unauthorized from access.'"
+// @Failure 500 {object} models.JsonErrorResponse "Error returned will be 'failed to fetch student subject allowance'"
+// @Router /api/student/subject-allowance [get]
+func _doc_GetStudentSubjectAllowance() {}
+
 // @Summary Get priorities
 // @Description Retrieves a list of priorities for the logged-in student
 // @Tags student

@@ -454,6 +454,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/student/subject-allowance": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the subject slot allowances assigned to the authenticated student.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "student"
+                ],
+                "summary": "Get student subject allowance",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonSubjectAllowanceResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error returned will be: 'Unauthorized from access.'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error returned will be 'failed to fetch student subject allowance'",
+                        "schema": {
+                            "$ref": "#/definitions/models.JsonErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/subjects": {
             "get": {
                 "description": "Retrieves a list of all available subjects, with optional query filters",
@@ -901,6 +938,21 @@ const docTemplate = `{
                 }
             }
         },
+        "models.JsonSubjectAllowanceResponse": {
+            "type": "object",
+            "properties": {
+                "allowance": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.StudentSubjectAllowance"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Allowance Fetched Succesfully!"
+                }
+            }
+        },
         "models.JsonSuccesfulResponse": {
             "type": "object",
             "properties": {
@@ -1080,6 +1132,27 @@ const docTemplate = `{
                 "subject_type": {
                     "type": "string",
                     "example": "professional"
+                }
+            }
+        },
+        "models.StudentSubjectAllowance": {
+            "type": "object",
+            "properties": {
+                "free_subject_allowance": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "professional_subject_allowance": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "semester": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "student_id": {
+                    "type": "integer",
+                    "example": 2
                 }
             }
         },

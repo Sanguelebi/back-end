@@ -40,6 +40,26 @@ func GetStudentChoosableSubjectsHandler(app *config.AppData) gin.HandlerFunc {
 	}
 }
 
+func GetStudentSubjectAllowanceHandler(app *config.AppData) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		val, exists := c.Get("userID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized from access."})
+			return
+		}
+		
+		studentID := val.(uint)
+
+		status, allowance, err := services.GetStudentSubjectAllowanceService(app, studentID)
+		if err != nil {
+			c.JSON(status, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Allowance fetched succesfully.", "allowance": allowance})
+	}
+}
+
 func GetStudentPrioritiesHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		val, exists := c.Get("userID")

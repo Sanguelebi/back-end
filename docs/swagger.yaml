@@ -149,6 +149,16 @@ definitions:
       user:
         $ref: '#/definitions/models.LoginUserResponse'
     type: object
+  models.JsonSubjectAllowanceResponse:
+    properties:
+      allowance:
+        items:
+          $ref: '#/definitions/models.StudentSubjectAllowance'
+        type: array
+      message:
+        example: Allowance Fetched Succesfully!
+        type: string
+    type: object
   models.JsonSuccesfulResponse:
     properties:
       message:
@@ -279,6 +289,21 @@ definitions:
       subject_type:
         example: professional
         type: string
+    type: object
+  models.StudentSubjectAllowance:
+    properties:
+      free_subject_allowance:
+        example: 1
+        type: integer
+      professional_subject_allowance:
+        example: 2
+        type: integer
+      semester:
+        example: 2
+        type: integer
+      student_id:
+        example: 2
+        type: integer
     type: object
   models.Subject:
     properties:
@@ -672,6 +697,30 @@ paths:
       security:
       - BearerAuth: []
       summary: Get choosable subjects for a student
+      tags:
+      - student
+  /api/student/subject-allowance:
+    get:
+      description: Retrieves the subject slot allowances assigned to the authenticated
+        student.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.JsonSubjectAllowanceResponse'
+        "401":
+          description: 'Error returned will be: ''Unauthorized from access.'''
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+        "500":
+          description: Error returned will be 'failed to fetch student subject allowance'
+          schema:
+            $ref: '#/definitions/models.JsonErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get student subject allowance
       tags:
       - student
   /api/subjects:
